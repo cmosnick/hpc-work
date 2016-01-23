@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/cmosnick07/Code/hpc-work/homework0/main.cpp
+stdlib.h
+-
+string
+-
+fstream
+-
+sstream
+-
+iostream
+-
+map
+-
+vector
+-
+
