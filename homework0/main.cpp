@@ -7,6 +7,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <cstring>
+
+using namespace std;
 
 #define NUM_FLOATS 4096
 #define FNAME_SIZE 256
@@ -31,23 +34,23 @@ void destroy_file(file_t* file);
 int main(int argc, char const *argv[])
 {
 	if(argc < 2){
-		std::cout << "Please enter a csv input file." <<std::endl;
+		cout << "Please enter a csv input file." <<endl;
 		exit(0);
 	}
 
-	std::cout << argv[1] << std::endl;
+	cout << argv[1] << endl;
 
 	FILE *infile = fopen(argv[1], "r");
 	if(!infile){
-		std::cout << "File invalid" << std::endl;
+		cout << "File invalid" << endl;
 		exit(0);
 	}
 	// Make map of files
-	std::map< std::string, std::vector<float> > files;
+	map< string, vector<float> > files;
 
 
 	char *line = (char*)malloc(sizeof(char) * 256);
-	char delims[] = ",";
+	char delims[] = ",\0";
 	char *token = NULL;
 	// Get filename
 	size_t file_t_size = (size_t)sizeof(file_t);
@@ -59,51 +62,38 @@ int main(int argc, char const *argv[])
 			//Instantiate struct
 			// std::cout << token << "\n\n" << std::endl;
 			size_t size = get_token_length(token);
-
-			std::string fname (token, size);
-			std::cout << fname << "\n\n" << std::endl;
-
-			// file_t *file = (file_t*)calloc(1, sizeof(file_t));
-			
+			char *fnameChar = (char *)calloc(1, sizeof(char)*(size+1));
+			strncpy(fnameChar, token, size);
+			fnameChar[size] = '\0';
 			// Get file name from first token
-			// ssize_t token_size = get_token_length(token);
-			// Not sure why token size would be 0.  line atrts with comma?  w/e.
-			// if(token_size >= 0){
-				// strncpy(file->fname, token, token_size);
-			// }
+			string fname (fnameChar, size);
+			cout << fname << "\n\n" << endl;
 
 			// read in floats
-			std::vector<float> floats(NUM_FLOATS);
-			uint i;
+			vector<float> floats(NUM_FLOATS);
+			files.insert(pair<string, vector<float>>(fname, vector<float>(NUM_FLOATS)));
+
+			uint i = 0;
 			do{
 				token = strtok(NULL, delims);
 				if(token && is_float(token)){
 					float temp = atof(token);
-					// if(temp != 0){
-						// file->nums[i] = temp;
-					// }
-					// This is literally pointless.  It will be 0.0 value if error anyways.  
-					// Insert error handling below if desired.
-					// else{
-						// file->nums[i] = 0.0;
-					// }
-					// std::cout << temp;
+					files[fnameChar].push_back(temp);
 					floats.push_back(temp);
+					// std::cout << temp;
 				}
 				else 
 					break;
-			}while( i < NUM_FLOATS);
-			// file->size = i;
+				i++;
+			}while( i <= NUM_FLOATS);
 
 			// Add file to map
-			// files.push_back(file);
-			files[fname] = floats;
+			// files.insert(pair<string, vector<float>>(fname, floats));
 		}
 		else{
 			break;
 		}
 	}
-	// print_vector(files);
 	return 0;
 }
 
