@@ -14,6 +14,8 @@ using namespace std;
 #define NUM_FLOATS 4096
 #define FNAME_SIZE 256
 #define FILE_T_SIZE return sizeof(file_t)
+#define FLOAT_CHARS 47
+
 
 #endif
 
@@ -25,8 +27,8 @@ typedef struct file_t{
 
 ssize_t get_token_length(char* token);
 bool is_float(char* token);
-void print_vector(std::vector<file_t*> vector);
-void print_file(file_t* file);
+void print_vector(std::vector<float> vector);
+// void print_file(file_t* file);
 void destroy_vector( std::vector<file_t*> vector);
 void destroy_file(file_t* file);
 
@@ -49,7 +51,7 @@ int main(int argc, char const *argv[])
 	map< string, vector<float> > files;
 
 
-	char *line = (char*)malloc(sizeof(char) * 256);
+	char *line = (char*)malloc(sizeof(char) * (FNAME_SIZE + (NUM_FLOATS +2)));
 	char delims[] = ",\0";
 	char *token = NULL;
 	// Get filename
@@ -62,24 +64,25 @@ int main(int argc, char const *argv[])
 			//Instantiate struct
 			// std::cout << token << "\n\n" << std::endl;
 			size_t size = get_token_length(token);
-			char *fnameChar = (char *)calloc(1, sizeof(char)*(size+1));
-			strncpy(fnameChar, token, size);
-			fnameChar[size] = '\0';
+			// char *fnameChar = (char *)malloc(sizeof(char)*(size+1));
+			// strncpy(fnameChar, token, size);
+			// fnameChar[size] = '\0';
 			// Get file name from first token
-			string fname (fnameChar, size);
-			cout << fname << "\n\n" << endl;
+			std::string fname (token, size);
+			// free(fnameChar);
+			// cout << fname << "\n\n" << endl;
 
 			// read in floats
 			vector<float> floats(NUM_FLOATS);
-			files.insert(pair<string, vector<float>>(fname, vector<float>(NUM_FLOATS)));
+			// files.insert(pair<string, vector<float>>(fname, vector<float>(NUM_FLOATS)));
 
 			uint i = 0;
 			do{
 				token = strtok(NULL, delims);
 				if(token && is_float(token)){
 					float temp = atof(token);
-					files[fnameChar].push_back(temp);
-					floats.push_back(temp);
+					// files[fnameChar].push_back(temp);
+					floats[i]=temp;
 					// std::cout << temp;
 				}
 				else 
@@ -89,6 +92,10 @@ int main(int argc, char const *argv[])
 
 			// Add file to map
 			// files.insert(pair<string, vector<float>>(fname, floats));
+			files[fname] = floats;
+			cout<< fname << ": ";
+			print_vector(files[fname]);
+			cout<< endl <<endl;
 		}
 		else{
 			break;
@@ -127,28 +134,14 @@ bool is_float(char* token){
 	return false;
 }
 
-void print_vector(std::vector<file_t*> vector){
+void print_vector(std::vector<float> vector){
 	size_t size = vector.size();
 	for(int i = 0 ; i< size ; i++){
-		print_file(vector[i]);
-	}
-}
-
-void print_file(file_t* file){
-	if(file){
-		std::cout <<file->fname <<std::endl;
-		for(int i =0 ; i< file->size ; i++){
-			std::cout << file->nums[i] << ", ";
-		}
-		std::cout << std::endl;
+		cout<<vector[i];
 	}
 }
 
 void destroy_vector( std::vector<file_t*> vector){
-
-}
-
-void destroy_file(file_t* file){
 
 }
 
