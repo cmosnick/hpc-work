@@ -8,7 +8,8 @@
 #include <map>
 #include <vector>
 #include <cstring>
-#include <sys/time.h>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
 
@@ -52,8 +53,8 @@ int main(int argc, char const *argv[])
 	}
 
 	// Start clock
-	struct timeval stop, start;
-	gettimeofday(&start, NULL);
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
 
 	// Make map of files
 	map< string, vector<float> > files;
@@ -99,12 +100,12 @@ int main(int argc, char const *argv[])
 		numLines ++;
 	}
 	// Print time to process file
-	gettimeofday(&stop, NULL);
-	float timeElapsed = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)*0.000001);
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> timeElapsed = end-start;
 
 	// Print number of lines parsed
 	cout << "\n\nNumber of lines parsed: " << numLines << endl;
-	cout << "\n\nTime to process file: " << timeElapsed << "s" << endl;
+	cout << "\n\nTime to process file: " << timeElapsed.count() << "s" << endl;
 
 
 
