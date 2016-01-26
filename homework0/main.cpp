@@ -10,6 +10,7 @@
 #include <cstring>
 #include <chrono>
 #include <ctime>
+#include <math.h>
 
 using namespace std;
 
@@ -23,18 +24,11 @@ using namespace std;
 
 #endif
 
-typedef struct file_t{
-	size_t size;
-	char fname[256];
-	float nums[4096];
-}file_t;
-
 ssize_t get_token_length(char* token);
 bool is_float(char* token);
 void print_vector(std::vector<float> vector);
-// void print_file(file_t* file);
-void destroy_vector( std::vector<file_t*> vector);
-void destroy_file(file_t* file);
+void find_bounding_min_max(map<string, vector<float>> fileMap, vector<vector<float>> *minMaxVector);
+
 
 
 int main(int argc, char const *argv[])
@@ -43,15 +37,16 @@ int main(int argc, char const *argv[])
 		cout << "Please enter a csv input file." <<endl;
 		exit(0);
 	}
-
-	cout << argv[1] << endl;
-
+	// cout << argv[1] << endl;
 	FILE *infile = fopen(argv[1], "r");
 	if(!infile){
 		cout << "File invalid" << endl;
 		exit(0);
 	}
 
+	/***************************
+	Part one: Read in file, store in map
+	****************************/
 	// Start clock
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
@@ -59,15 +54,15 @@ int main(int argc, char const *argv[])
 	// Make map of files
 	map< string, vector<float> > files;
 
-
 	char *line = (char*)malloc(sizeof(char) * LINE_SIZE);
 	char *token = NULL;
-	// Get filename
-	size_t file_t_size = (size_t)sizeof(file_t);
 
+	// Get line
+	size_t lineSize = LINE_SIZE;
 	int numLines = 0;
-	while(getline(&line, &file_t_size, infile)){
+	while(getline(&line, &lineSize, infile)){
 		// std::cout << line << "\n\n" << std::endl;
+		
 		// Get first token, the filename
 		token = strtok(line, DELIMS);
 		if(token){
@@ -106,7 +101,27 @@ int main(int argc, char const *argv[])
 	// Print number of lines parsed
 	cout << "\n\nNumber of lines parsed: " << numLines << endl;
 	cout << "\n\nTime to process file: " << timeElapsed.count() << "s" << endl;
+	free(line);
 
+
+
+	/***************************
+	Part two: find bounding min and max of each column
+	****************************/
+	vector<vector<float>> minMaxVector({vector<float>(NUM_FLOATS, INFINITY), vector<float>(NUM_FLOATS, -INFINITY)});
+	// print_vector(minMaxVector[0]);
+	// print_vector(minMaxVector[1]);
+	
+	start = std::chrono::system_clock::now();
+	find_bounding_min_max(files, &minMaxVector);
+    end = std::chrono::system_clock::now();
+    timeElapsed = end-start;
+    cout << "\n\nTime to process Columns: " << timeElapsed.count() << "s" << endl;
+
+	// cout << "\n\nColumn minimums:\n";
+	// print_vector(minMaxVector[0]);
+	// cout << "\n\nColumn maximums:\n";
+	// print_vector(minMaxVector[1]);
 
 
 	return 0;
@@ -142,17 +157,34 @@ bool is_float(char* token){
 	return false;
 }
 
-void print_vector(std::vector<float> vector){
+void print_vector(vector<float> vector){
 	size_t size = vector.size();
 	for(int i = 0 ; i< size ; i++){
 		cout<<vector[i] << ", ";
 	}
 }
 
-void destroy_vector( std::vector<file_t*> vector){
-
+void find_bounding_min_max(map<string, vector<float>> fileMap, vector<vector<float>> *minMaxVector){
+	map<string,vector<float>>::iterator it = fileMap.begin();
+	// Iterate through each row
+	for (; it != fileMap.end(); ++it){
+		// cout << it->first << endl;
+		// Iterate through each fo the row's floats, compare to min max vector
+		size_t size = it->second.size();
+		int i = 0;
+		for(; i < size  && i< NUM_FLOATS; i++){
+			// Compare to min
+			if(it->second[i] < (*minMaxVector)[0][i]){
+				(*minMaxVector)[0][i] = it->second[i];
+			}
+			// Compare to max
+			else if(it->second[i] > (*minMaxVector)[1][i]){
+				(*minMaxVector)[1][i] = it->second[i];
+			}
+		}
+		// cout << i <<endl;
+	}
 }
-
 
 
 
