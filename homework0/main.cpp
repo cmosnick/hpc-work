@@ -8,10 +8,11 @@
 #include <map>
 #include <vector>
 #include <cstring>
+#include <sys/time.h>
 
 using namespace std;
 
-#define NUM_FLOATS 4096
+#define NUM_FLOATS 4097
 #define FNAME_SIZE 256
 #define FILE_T_SIZE return sizeof(file_t)
 #define FLOAT_CHARS 47
@@ -47,6 +48,11 @@ int main(int argc, char const *argv[])
 		cout << "File invalid" << endl;
 		exit(0);
 	}
+
+	// Start clock
+	struct timeval stop, start;
+	gettimeofday(&start, NULL);
+
 	// Make map of files
 	map< string, vector<float> > files;
 
@@ -56,51 +62,46 @@ int main(int argc, char const *argv[])
 	char *token = NULL;
 	// Get filename
 	size_t file_t_size = (size_t)sizeof(file_t);
+
+	int numLines = 0;
 	while(getline(&line, &file_t_size, infile)){
 		// std::cout << line << "\n\n" << std::endl;
 		// Get first token, the filename
 		token = strtok(line, delims);
 		if(token){
-			//Instantiate struct
-			// std::cout << token << "\n\n" << std::endl;
+			// Put token into string
 			size_t size = get_token_length(token);
-			// char *fnameChar = (char *)malloc(sizeof(char)*(size+1));
-			// strncpy(fnameChar, token, size);
-			// fnameChar[size] = '\0';
-			// Get file name from first token
 			std::string fname (token, size);
-			// free(fnameChar);
-			// cout << fname << "\n\n" << endl;
-
+			
 			// read in floats
 			vector<float> floats(NUM_FLOATS);
-			// files.insert(pair<string, vector<float>>(fname, vector<float>(NUM_FLOATS)));
-
 			uint i = 0;
 			do{
 				token = strtok(NULL, delims);
 				if(token && is_float(token)){
 					float temp = atof(token);
-					// files[fnameChar].push_back(temp);
 					floats[i]=temp;
-					// std::cout << temp;
 				}
 				else 
 					break;
 				i++;
 			}while( i <= NUM_FLOATS);
 
-			// Add file to map
-			// files.insert(pair<string, vector<float>>(fname, floats));
+			// Add fname and vector to map
 			files[fname] = floats;
-			cout<< fname << ": ";
-			print_vector(files[fname]);
-			cout<< endl <<endl;
 		}
 		else{
 			break;
 		}
+		numLines ++;
 	}
+	// Print time to process file
+	gettimeofday(&stop, NULL);
+	float timeElapsed = (stop.tv_sec - start.tv_sec) + ((stop.tv_usec - start.tv_usec)*0.000001);
+
+	// Print number of lines parsed
+	cout << "\n\nNumber of lines parsed: " << numLines << endl;
+	cout << "\n\nTime to process file: " << timeElapsed << "s" << endl;
 	return 0;
 }
 
@@ -137,7 +138,7 @@ bool is_float(char* token){
 void print_vector(std::vector<float> vector){
 	size_t size = vector.size();
 	for(int i = 0 ; i< size ; i++){
-		cout<<vector[i];
+		cout<<vector[i] << ", ";
 	}
 }
 
