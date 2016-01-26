@@ -16,7 +16,9 @@ using namespace std;
 #define FNAME_SIZE 256
 #define FILE_T_SIZE return sizeof(file_t)
 #define FLOAT_CHARS 47
+#define LINE_SIZE FNAME_SIZE + ( NUM_FLOATS * (FLOAT_CHARS + 3) )
 
+#define DELIMS ","
 
 #endif
 
@@ -57,8 +59,7 @@ int main(int argc, char const *argv[])
 	map< string, vector<float> > files;
 
 
-	char *line = (char*)malloc(sizeof(char) * (FNAME_SIZE + (NUM_FLOATS +2)));
-	char delims[] = ",\0";
+	char *line = (char*)malloc(sizeof(char) * LINE_SIZE);
 	char *token = NULL;
 	// Get filename
 	size_t file_t_size = (size_t)sizeof(file_t);
@@ -67,17 +68,17 @@ int main(int argc, char const *argv[])
 	while(getline(&line, &file_t_size, infile)){
 		// std::cout << line << "\n\n" << std::endl;
 		// Get first token, the filename
-		token = strtok(line, delims);
+		token = strtok(line, DELIMS);
 		if(token){
 			// Put token into string
-			size_t size = get_token_length(token);
-			std::string fname (token, size);
+			// size_t size = get_token_length(token);
+			std::string fname (token);
 			
 			// read in floats
 			vector<float> floats(NUM_FLOATS);
 			uint i = 0;
 			do{
-				token = strtok(NULL, delims);
+				token = strtok(NULL, DELIMS);
 				if(token && is_float(token)){
 					float temp = atof(token);
 					floats[i]=temp;
@@ -89,6 +90,8 @@ int main(int argc, char const *argv[])
 
 			// Add fname and vector to map
 			files[fname] = floats;
+			// cout<< "\n\n" << fname << ": " << endl;
+			// print_vector(files[fname]);
 		}
 		else{
 			break;
@@ -102,6 +105,9 @@ int main(int argc, char const *argv[])
 	// Print number of lines parsed
 	cout << "\n\nNumber of lines parsed: " << numLines << endl;
 	cout << "\n\nTime to process file: " << timeElapsed << "s" << endl;
+
+
+
 	return 0;
 }
 
