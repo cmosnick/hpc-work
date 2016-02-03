@@ -29,7 +29,10 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 	int sum,
 		res_rows = result.size1(),
 		res_cols = result.size2(),
-		inner= rhs.size1();
+		inner= lhs.size2();
+
+	// Transpose rhs matrix
+	scottgs::FloatMatrix rhsT = boost::numeric::ublas::trans(rhs);
 
 	// for every row in result
 	for(int i = 0 ; i < res_rows ; i++){
@@ -39,7 +42,7 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 			sum = 0;
 			// result(i, j) = 0;
 			for(int k = 0 ; k < inner ; k++){
-				sum += lhs(i, k) * rhs(k, j);
+				sum += lhs(i, k) * rhsT(j, k);
 				// result(i, j) += lhs(i, k) * rhs(k, j);
 			}
 			result(i, j) = sum;
