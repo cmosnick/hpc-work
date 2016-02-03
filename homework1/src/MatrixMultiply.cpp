@@ -26,19 +26,23 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 
 
 	// YOUR ALGORIHM WITH COMMENTS GOES HERE:
-	// int sum;
+	int sum,
+		res_rows = result.size1(),
+		res_cols = result.size2(),
+		inner= rhs.size1();
 
 	// for every row in result
-	for(int i = 0 ; i < result.size1() ; i++){
+	for(int i = 0 ; i < res_rows ; i++){
 		// Go through every column in result
-		for(int j = 0 ; j < result.size2() ; j++){
+		for(int j = 0 ; j < res_cols ; j++){
 			// Multiply lhs row with rhs column
-			// sum = 0;
-			result(i, j) = 0;
-			for(int k = 0 ; k < rhs.size1() ; k++){
-				result(i, j) += lhs(i, k) * rhs(k, j);
+			sum = 0;
+			// result(i, j) = 0;
+			for(int k = 0 ; k < inner ; k++){
+				sum += lhs(i, k) * rhs(k, j);
+				// result(i, j) += lhs(i, k) * rhs(k, j);
 			}
-			// result(i, j) = sum;
+			result(i, j) = sum;
 		}
 	}
 
