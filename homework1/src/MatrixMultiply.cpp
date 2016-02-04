@@ -26,10 +26,11 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 
 
 	// YOUR ALGORIHM WITH COMMENTS GOES HERE:
-	int sum,
-		res_rows = result.size1(),
+	float sum;
+	int	res_rows = result.size1(),
 		res_cols = result.size2(),
-		inner= lhs.size2();
+		inner= lhs.size2(),
+		lhs_cols = lhs.size2();
 
 	// Transpose rhs matrix
 	// scottgs::FloatMatrix rhsT = boost::numeric::ublas::trans(rhs);
@@ -43,6 +44,9 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 		}
 	}
 
+	float *resultPtr = &result(0,0);
+	const float *lhsPtr = &lhs(0,0);
+	const float *rhsTPtr = &rhsT(0,0);
 
 	// for every row in result
 	for(int i = 0 ; i < res_rows ; i++){
@@ -50,12 +54,10 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 		for(int j = 0 ; j < res_cols ; j++){
 			// Multiply lhs row with rhs column
 			sum = 0;
-			// result(i, j) = 0;
 			for(int k = 0 ; k < inner ; k++){
-				sum += lhs(i, k) * rhsT(j, k);
-				// result(i, j) += lhs(i, k) * rhs(k, j);
+				sum += lhsPtr[(i*lhs_cols) + k] * rhsTPtr[(j* rhsT_cols) + k];
 			}
-			result(i, j) = sum;
+			resultPtr[(i*res_cols) + j] = sum;
 		}
 	}
 
