@@ -30,7 +30,8 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 	int	res_rows = result.size1(),
 		res_cols = result.size2(),
 		inner= lhs.size2(),
-		lhs_cols = lhs.size2();
+		lhs_cols = lhs.size2(),
+		rhs_cols = rhs.size2();
 
 	// Transpose rhs matrix
 	// scottgs::FloatMatrix rhsT = boost::numeric::ublas::trans(rhs);
@@ -38,15 +39,18 @@ scottgs::FloatMatrix scottgs::MatrixMultiply::operator()(const scottgs::FloatMat
 	scottgs::FloatMatrix rhsT(rhs.size2(), rhs.size1());
 	int rhsT_rows = rhsT.size1(), rhsT_cols = rhsT.size2();
 
+	float *resultPtr = &result(0,0);
+	const float *lhsPtr = &lhs(0,0);
+	float *rhsTPtr = &rhsT(0,0);
+	const float *rhsPtr = &rhs(0,0);
+
 	for(int i = 0 ; i< rhsT_rows ; i++){
 		for(int j = 0 ; j< rhsT_cols ; j++){
-			rhsT(i, j) = rhs(j, i);
+			rhsTPtr[(i*rhsT_cols) + j] = rhsPtr[(j * rhs_cols) + i];
 		}
 	}
 
-	float *resultPtr = &result(0,0);
-	const float *lhsPtr = &lhs(0,0);
-	const float *rhsTPtr = &rhsT(0,0);
+	
 
 	// for every row in result
 	for(int i = 0 ; i < res_rows ; i++){
