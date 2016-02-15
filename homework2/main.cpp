@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+// #include <ctype.h>
 
 using namespace std;
 
@@ -16,11 +17,12 @@ using namespace std;
 #endif
 
 int read_in_file(map< string, vector<float> > *files, FILE *infile);
-bool is_float(char* token);
+bool is_float(const char* token);
 void print_vector(std::vector<float> *vector);
-
+bool process_query(map< string, vector<float> > *files, string queryFilename, int numResults, int numProcesses);
 int main(int argc, char const *argv[])
 {
+	// Check args
 	if(argc < 5){
 		cout << "Please enter (1) a filename query\n \
 		(2) a csv input file\n \
@@ -28,10 +30,32 @@ int main(int argc, char const *argv[])
 		(4) the number of processes." <<endl;
 		exit(0);
 	}
-	// cout << argv[1] << endl;
+	// Check input file
 	FILE *infile = fopen(argv[2], "r");
 	if(!infile){
 		cout << "File invalid" << endl;
+		exit(0);
+	}
+	/***************************
+	Part zero: Get args
+	****************************/
+	string queryFilename(argv[1]);
+	// number of results
+	int numResults = 0;
+	if(is_float(argv[3])){
+		numResults = atoi(argv[3]);
+	}
+	else{
+		cout << "Invalid number for argument 3" << endl;
+		exit(0);
+	}
+	// number of processes
+	int numProcesses = 0;
+	if(is_float(argv[4])){
+		numProcesses = atoi(argv[4]);
+	}
+	else{
+		cout << "Invalid number for argument 4" << endl;
 		exit(0);
 	}
 
@@ -63,7 +87,7 @@ int main(int argc, char const *argv[])
 
 	// Print number of lines parsed
 	cout << "\n\nNumber of lines parsed: " << numLines << endl;
-	cout << "\n\nTime to process file: " << timeElapsed.count() << "s" << endl;
+	cout << "Time to process file: " << timeElapsed.count() << "s" << endl;
 
 	
 
@@ -71,9 +95,16 @@ int main(int argc, char const *argv[])
 	Part two: Perform query
 	****************************/
 	start = std::chrono::system_clock::now();
-	// find_bounding_min_max(files, &minMaxVector);
+
+	bool success = process_query(&files, queryFilename, numResults, numProcesses);
+
     end = std::chrono::system_clock::now();
     timeElapsed = end-start;
+
+    if(!success){
+    	cout << "\n\nUnsucessful processing of query" << endl;
+    	exit(0);
+    }
     cout << "\n\nTime to process query: " << timeElapsed.count() << "s" << endl;
 
 
@@ -129,7 +160,7 @@ int read_in_file(map< string, vector<float> > *files, FILE *infile){
 }
 
 // Iterates through token to check if it is a float
-bool is_float(char* token){
+bool is_float(const char* token){
 	if(token){
 		uint i = 0;
 		while(token[i] != ',' && token[i]!='\n' && token[i]!='\0'){
@@ -152,4 +183,18 @@ void print_vector(vector<float> *vector){
 	}
 }
 
+bool process_query(map< string, vector<float> > *files, string queryFilename, int numResults, int numProcesses){
+	if(files && numResults > 0 && numProcesses > 0){
+		// Check that requested file to query is in csv file
+		if((*files).count(queryFilename) == 0){
+			cout << "\n\nError: Queried filename is not in the database.  Query terminated." << endl;
+			return false;
+		}
+		
+
+
+		return true;
+	}
+	return false;
+}
 
