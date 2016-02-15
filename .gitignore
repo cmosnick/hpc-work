@@ -79,3 +79,9 @@ $RECYCLE.BIN/
 .*
 !.gitignore
 *~
+
+homework0/gen_csv.cpp
+homework1.zip
+homework1/analyze/hw1_analyze
+homework1/src/hw1
+
