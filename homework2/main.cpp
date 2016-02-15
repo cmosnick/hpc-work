@@ -4,7 +4,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
-// #include <ctype.h>
+#include <math.h>
 
 using namespace std;
 
@@ -20,6 +20,8 @@ int read_in_file(map< string, vector<float> > *files, FILE *infile);
 bool is_float(const char* token);
 void print_vector(std::vector<float> *vector);
 bool process_query(map< string, vector<float> > *files, string queryFilename, int numResults, int numProcesses);
+float compute_L1_norm(vector<float> *v1, vector<float> *v2);
+
 int main(int argc, char const *argv[])
 {
 	// Check args
@@ -190,11 +192,32 @@ bool process_query(map< string, vector<float> > *files, string queryFilename, in
 			cout << "\n\nError: Queried filename is not in the database.  Query terminated." << endl;
 			return false;
 		}
-		
 
+		// Test L1 norm function
+		float difference = compute_L1_norm( &((*files)[queryFilename]), &((*files)["agricultural/agricultural05.tif"]) );
+
+		cout << "\n\nDifference: " << difference << endl;
 
 		return true;
 	}
 	return false;
+}
+
+// Computes the L1 norm between two vectors of floats
+// Returns 0 on error or if vectors are exactly alike
+float compute_L1_norm(vector<float> *v1, vector<float> *v2){
+	if(v1 && v2){
+		int s1 = (*v1).size(),
+			s2 = (*v2).size(),
+			i=0;
+		// Take smallest size
+		int size = (s1 < s2) ? s1:s2;
+		float sum = 0;
+		for( ; i < size ; i++){
+			sum += fabs( ((*v1)[i] - (*v2)[i]) );
+		}
+		return sum/size;
+	}
+	return 0;
 }
 
