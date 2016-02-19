@@ -35,20 +35,21 @@ typedef struct lineDistance{
 typedef struct childInfo{
 	lineDistance_t *start;
 	lineDistance_t *end;
+	uint startLine;
+	uint endLine;
 }childInfo_t;
 
 int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines);
 bool is_float(const char* token);
 void print_vector(std::vector<float> *vector);
-bool process_query(map< string, vector<float> > *files, string queryFilename, int numResults, int numProcesses);
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses);
 float compute_L1_norm(const vector<float> *v1, const vector<float> *v2);
-bool do_work(int processNumber, childInfo_t *childInfo);
+bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines);
 bool shm_setup(size_t size, lineDistance_t *shm);
-bool copy_vector_into_array( std::vector<float> *v, float *array );
 void print_lines(vector<pair<uint, vector<float>>> &lines);
 void print_filenames(map<string, uint> &fnames);
-
-
+bool isLine(const pair<uint, vector<float>> pair, uint lineNum);
+void print_line_distances(vector<pair<uint, float>> &lineDistances);
 
 
 int main(int argc, char const *argv[])
@@ -112,14 +113,13 @@ int main(int argc, char const *argv[])
 		exit(0);
 	}
 
-	print_filenames(fnames);
-	print_lines(lines);
+	// print_filenames(fnames);
+	// print_lines(lines);
 	// Print database map
 	// map< string, vector<float> >::iterator itr=files.begin(); 
 	// for(; itr != files.end() ; itr++){
 	// 	print_vector(&(itr->second));
 	// }
-
 	// Print number of lines parsed
 	cout << "\n\nNumber of lines parsed: " << numLines << endl;
 	cout << "Time to process file: " << timeElapsed.count() << "s" << endl;
@@ -131,7 +131,7 @@ int main(int argc, char const *argv[])
 	****************************/
 	start = std::chrono::system_clock::now();
 
-	bool success = process_query(&files, queryFilename, numResults, numProcesses);
+	bool success = process_query(fnames, lines, queryFilename, numResults, numProcesses);
 
     end = std::chrono::system_clock::now();
     timeElapsed = end-start;
@@ -145,7 +145,6 @@ int main(int argc, char const *argv[])
 
 	return 0;
 }
-
 
 // Read csv into map of vectors
 int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines){
@@ -222,10 +221,10 @@ void print_vector(vector<float> *vector){
 	}
 }
 
-bool process_query(map< string, vector<float> > *files, string queryFilename, int numResults, int numProcesses){
-	if(files && numResults > 0 && numProcesses > 0){
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses){
+	if(!fnames.empty() && !lines.empty() && numResults > 0 && numProcesses > 0){
 		// Check that requested file to query is in csv file
-		if((*files).count(queryFilename) == 0){
+		if(fnames.count(queryFilename) == 0){
 			cout << "\n\nError: Queried filename is not in the database.  Query terminated." << endl;
 			return false;
 		}
@@ -233,71 +232,58 @@ bool process_query(map< string, vector<float> > *files, string queryFilename, in
 		// Test L1 norm function
 		// float difference = compute_L1_norm( &((*files)[queryFilename]), &((*files)["agricultural/agricultural05.tif"]) );
 		// cout << "\n\nDifference: " << difference << endl;
-		int i=0;
-		pid_t pids[numProcesses];
-
-		// Reorganize map into contiguous data structure
-		int size = (*files).size();
-		int numLines = size;
-		// fnameToLineNum_t fileNames[size];
-		// lineNumToValues_t lines[size];
-
-		// map< string, vector<float> >::iterator itr=(*files).begin(); 
-		// for(; itr != (*files).end() ; itr++, i++){
-		// 	// copy filename into filenames array
-		// 	int len = itr->first.length();
-		// 	itr->first.copy( (fileNames[i].fname), len, 0);
-		// 	fileNames[i].lineNum = i;
-		// 	// copy line numbers and values into line numbers array
-		// 	lines[i].lineNum = i;
-		// 	if(! copy_vector_into_array( &(itr->second), (lines[i].values)) ){
-		// 		cout << "\n\nError: error copying vector into array" << endl;
-		// 	}
-		// }
-
-		// // Print new structures out be sure they work
-		// print_filename_array(fileNames, size);
-		// print_lines_array(lines, size);
-
+		
 
 		// Set up shared memory
+		int numLines = fnames.size();
 		lineDistance_t *shm = NULL;
 		size_t shmsize = sizeof(lineDistance_t)*numResults*numProcesses;
 		int shmId = shm_setup(shmsize, shm);
-		cout << "\n\nShared memory id: " << shmId << endl;
+		// cout << "\n\nShared memory id: " << shmId << endl;
 
-		// Setup step variable to divide shared memory
+		// Setup steps to divide shared memory
+		int i=0;
 		lineDistance_t *shmEnd = shm + numLines;
 		childInfo_t childInfo[numProcesses];
 		int step = (int)(numLines / numProcesses);
 		int stepSize = step * sizeof(lineDistance_t);
 		for(i = 0 ; i < numProcesses ; i++){
 			childInfo[i].start = shm + (stepSize * i);
+			childInfo[i].startLine = step * i;
 			// Last process takes extra 
 			if( (i+1) == numProcesses ){
 				childInfo[i].end = shmEnd;
+				childInfo[i].endLine = numLines;
 			}
 			else{
 				childInfo[i].end = shm + (stepSize * (i+1));
+				childInfo[i].endLine = (step *(i+1));
 			}
 		}
 
+		// Get target vector of file name
+		uint queryLineNum = fnames[queryFilename];
+		vector<pair<uint, vector<float>>>::iterator itr = lines.begin();
+		while(itr != lines.end()){
+			if(itr->first == queryLineNum){
+				break;
+			}
+			itr++;
+		}
+		const vector<float> *queryFloats = &(itr->second);
+
 		// Fork process into worker processes
+		pid_t pids[numProcesses];
 		for(i = 0 ; i < numProcesses ; i++){
 			pid_t pid = fork();
 			if(pid >= 0){
 				if(pid == 0){	// Child process
-					// compute work on partition
 					// call helper on partition
-					// lineDistance_t *start = shm;
-
-					do_work(i+1, &(childInfo[i]));
+					do_work(i+1, childInfo[i], queryFloats, lines);
 					exit(0);
 				}
 				else{			// Parent process
 					pids[i] = pid;
-					// increment shared memory
-
 				}
 			}
 			else{
@@ -344,11 +330,37 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 	return 0;
 }
 
-bool do_work(int processNumber, childInfo_t *childInfo){
+bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines){
 	cout << "\nProcess "<< processNumber << endl;
-	cout << "Child info: start: " << childInfo->start << " end: " << childInfo->end << endl;
+	cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
+	cout << "Child info: startLine: " << childInfo.startLine << " endLine: " << childInfo.endLine << endl;
+
 	
+	// process files
+	uint startLine = childInfo.startLine;
+	uint endLine = childInfo.endLine;
+
+	// Create vecator of pair <uint, float> to heapify later
+	vector<pair<uint, float>> lineDistances;
+
+	// iterate though lines
+	while(startLine < endLine){
+		float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
+		lineDistances.push_back({startLine, temp});
+
+		startLine++;
+	}
+	// if(processNumber ==3 ){
+		print_line_distances(lineDistances);
+
+	// }
+	// print_line_distances(lineDistances);
+	// Store in shared memory
+	// lineDistance_t *shm = childInfo.start;
+	// lineDistance_t *shmEnd = childInfo.end;
 	
+
+
 	return true;
 }
 
@@ -372,14 +384,6 @@ bool shm_setup(size_t size, lineDistance_t *shm){
 	return 0;
 }
 
-bool copy_vector_into_array( std::vector<float> *v, float *array ){
-	int size = v->size();
-	for(int i = 0 ; i <size ; i++){
-		array[i] = (*v)[i];
-	}
-	return true;
-}
-
 void print_filenames(map<string, uint> &fnames){
 	map<string, uint>::iterator itr = fnames.begin();
 	for( ; itr != fnames.end() ; itr++){
@@ -393,6 +397,15 @@ void print_lines(vector<pair<uint, vector<float>>> &lines){
 		cout << lines[i].first << ": " << endl;
 	}
 }
+
+void print_line_distances(vector<pair<uint, float>> &lineDistances){
+	vector<pair<uint, float>>::iterator itr = lineDistances.begin();
+	while(itr < lineDistances.end()){
+		cout << itr->first << ":  " << itr->second << endl;
+		itr++;
+	}
+}
+
 
 
 
