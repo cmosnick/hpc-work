@@ -51,6 +51,8 @@ void print_filenames(map<string, uint> &fnames);
 bool isLine(const pair<uint, vector<float>> pair, uint lineNum);
 void print_line_distances(vector<pair<uint, float>> &lineDistances);
 void print_shm(lineDistance_t *start, const lineDistance_t *end);
+bool comp(pair<uint, float> el1, pair<uint, float> el2);
+
 
 
 int main(int argc, char const *argv[])
@@ -332,7 +334,7 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 }
 
 bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines, int numResults){
-	cout << "\nProcess "<< processNumber << endl;
+	cout << "Process "<< processNumber << endl;
 	// cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
 	cout << "Child info: startLine: " << childInfo.startLine << " endLine: " << childInfo.endLine << endl;
 
@@ -356,8 +358,9 @@ bool do_work(int processNumber, const childInfo_t childInfo, const vector<float>
 	// print_line_distances(lineDistances);
 
 	// Sort to get top results (shortest distance)
-	make_heap(lineDistances.begin(), lineDistances.end());
-	// lineDistances.resize(numResults);
+	sort_heap(lineDistances.begin(), lineDistances.end(), &comp);
+	// sort_heap()
+	lineDistances.resize(numResults);
 	print_line_distances(lineDistances);
 
 	// Store in shared memory
@@ -430,7 +433,9 @@ void print_shm(lineDistance_t *start, const lineDistance_t *end){
 	return;
 }
 
-
+bool comp(pair<uint, float> el1, pair<uint, float> el2){
+	return (el1.second < el2.second);
+}
 
 
 
