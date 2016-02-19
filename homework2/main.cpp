@@ -44,12 +44,13 @@ bool is_float(const char* token);
 void print_vector(std::vector<float> *vector);
 bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses);
 float compute_L1_norm(const vector<float> *v1, const vector<float> *v2);
-bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines);
+bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines, int numResults);
 bool shm_setup(size_t size, lineDistance_t *shm);
 void print_lines(vector<pair<uint, vector<float>>> &lines);
 void print_filenames(map<string, uint> &fnames);
 bool isLine(const pair<uint, vector<float>> pair, uint lineNum);
 void print_line_distances(vector<pair<uint, float>> &lineDistances);
+void print_shm(lineDistance_t *start, const lineDistance_t *end);
 
 
 int main(int argc, char const *argv[])
@@ -279,7 +280,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			if(pid >= 0){
 				if(pid == 0){	// Child process
 					// call helper on partition
-					do_work(i+1, childInfo[i], queryFloats, lines);
+					do_work(i+1, childInfo[i], queryFloats, lines, numResults);
 					exit(0);
 				}
 				else{			// Parent process
@@ -330,9 +331,9 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 	return 0;
 }
 
-bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines){
+bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines, int numResults){
 	cout << "\nProcess "<< processNumber << endl;
-	cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
+	// cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
 	cout << "Child info: startLine: " << childInfo.startLine << " endLine: " << childInfo.endLine << endl;
 
 	
@@ -343,21 +344,29 @@ bool do_work(int processNumber, const childInfo_t childInfo, const vector<float>
 	// Create vecator of pair <uint, float> to heapify later
 	vector<pair<uint, float>> lineDistances;
 
-	// iterate though lines
+	// iterate though lines to get distances
 	while(startLine < endLine){
 		float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
 		lineDistances.push_back({startLine, temp});
 
 		startLine++;
 	}
-	// if(processNumber ==3 ){
-		print_line_distances(lineDistances);
-
-	// }
+	
+	// Print result
 	// print_line_distances(lineDistances);
+
+	// Sort to get top results (shortest distance)
+	make_heap(lineDistances.begin(), lineDistances.end());
+	// lineDistances.resize(numResults);
+	print_line_distances(lineDistances);
+
 	// Store in shared memory
 	// lineDistance_t *shm = childInfo.start;
 	// lineDistance_t *shmEnd = childInfo.end;
+
+	// if(processNumber == 4){
+	// print_shm(shm, shmEnd);
+	// }
 	
 
 
@@ -404,6 +413,21 @@ void print_line_distances(vector<pair<uint, float>> &lineDistances){
 		cout << itr->first << ":  " << itr->second << endl;
 		itr++;
 	}
+}
+
+void print_shm(lineDistance_t *start, const lineDistance_t *end){
+
+	if(end != NULL){
+		while(start != end){
+
+			cout<<"here!!"<<endl;
+			cout << (*start).lineNum << ": " << (*start).distance <<endl;
+			// Can't get these ^^^ vvvvv lines to print.  What is wrong??
+			cout << "Shm info: start: " << start << " end: " << end << endl;
+			start++;
+		}
+	}
+	return;
 }
 
 
