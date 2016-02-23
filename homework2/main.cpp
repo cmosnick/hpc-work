@@ -37,6 +37,8 @@ typedef struct childInfo{
 	lineDistance_t *end;
 	uint startLine;
 	uint endLine;
+	uint shmStartLine;
+	uint shmEndline;
 }childInfo_t;
 
 int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines);
@@ -240,28 +242,44 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		// Set up shared memory
 		int numLines = fnames.size();
 		lineDistance_t *shm = NULL;
-		size_t shmsize = sizeof(lineDistance_t)*numResults*numProcesses;
-		int shmId = shm_setup(shmsize, shm);
-		// cout << "\n\nShared memory id: " << shmId << endl;
+		int aggResults = numResults * numProcesses;
+		size_t shmsize = sizeof(lineDistance_t)*aggResults;
+		key_t shmKey = 123456;
+		int shmId;
+		int shmFlag = IPC_CREAT | 0666; // Flag to create with rw permissions
+		
+		if ((shmId = shmget(shmKey, shmsize, shmFlag)) < 0){
+			std::cerr << "Init: Failed to initialize shared memory (" << shmId << ")" << std::endl; 
+			return 0;
+		}
+
+		if (( shm = (lineDistance_t *)shmat(shmId, NULL, 0)) == (lineDistance_t *) -1){
+			std::cerr << "Init: Failed to attach shared memory (" << shmId << ")" << std::endl; 
+			return 0;
+		}
+		cout << "\n\nShared memory address: " << shm << endl;
+
 
 		// Setup steps to divide shared memory
 		int i=0;
-		lineDistance_t *shmEnd = shm + numLines;
+		lineDistance_t *shmEnd = &(shm[aggResults]);
 		childInfo_t childInfo[numProcesses];
 		int step = (int)(numLines / numProcesses);
-		int stepSize = step * sizeof(lineDistance_t);
+		// int stepSize = step * sizeof(lineDistance_t);
 		for(i = 0 ; i < numProcesses ; i++){
-			childInfo[i].start = shm + (stepSize * i);
+			childInfo[i].start = &shm[i];
 			childInfo[i].startLine = step * i;
+			childInfo[i].shmStartLine = i * numResults;
 			// Last process takes extra 
 			if( (i+1) == numProcesses ){
 				childInfo[i].end = shmEnd;
 				childInfo[i].endLine = numLines;
 			}
 			else{
-				childInfo[i].end = shm + (stepSize * (i+1));
+				childInfo[i].end = &(shm[i+1]);
 				childInfo[i].endLine = (step *(i+1));
 			}
+			childInfo[i].shmEndline = (i+1)*numResults;
 		}
 
 		// Get target vector of file name
@@ -305,6 +323,19 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		cout << "\n\nProcesses are finished!" << endl;
 
 		// Gather data in shared memory and get final solution
+		vector<pair<uint, float>> lineDistances;
+		lineDistance_t *shmStart = shm;
+		while(shmStart < shmEnd){
+			uint tempLine = shmStart[0].lineNum;
+			float tempDist = shmStart[0].distance;
+			lineDistances.push_back({tempLine, tempDist});
+			shmStart++;
+		}
+		// Sort aggregated results and cut off
+		sort_heap(lineDistances.begin(), lineDistances.end(), &comp);
+		lineDistances.resize(numResults);
+
+		// Match with filenames
 
 
 		// Destroy shared memory
@@ -334,7 +365,7 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 }
 
 bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines, int numResults){
-	cout << "Process "<< processNumber << endl;
+	// cout << "Process "<< processNumber << endl;
 	// cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
 	cout << "Child info: startLine: " << childInfo.startLine << " endLine: " << childInfo.endLine << endl;
 
@@ -361,14 +392,23 @@ bool do_work(int processNumber, const childInfo_t childInfo, const vector<float>
 	sort_heap(lineDistances.begin(), lineDistances.end(), &comp);
 	// sort_heap()
 	lineDistances.resize(numResults);
-	print_line_distances(lineDistances);
+	// print_line_distances(lineDistances);
 
 	// Store in shared memory
-	// lineDistance_t *shm = childInfo.start;
-	// lineDistance_t *shmEnd = childInfo.end;
+	lineDistance_t *shm = childInfo.start;
+	lineDistance_t *shmEnd = childInfo.end;
+	uint shmStartLine = childInfo.shmStartLine;
+	uint shmEndline = childInfo.shmEndline;
+
+	for(int i = shmStartLine, j = 0 ; i < shmEndline ; i++, j++){
+		shm[i].lineNum = lineDistances[j].first;
+		shm[i].distance = lineDistances[j].second;
+
+	}
+
 
 	// if(processNumber == 4){
-	// print_shm(shm, shmEnd);
+	print_shm(shm, shmEnd);
 	// }
 	
 
@@ -387,10 +427,11 @@ bool shm_setup(size_t size, lineDistance_t *shm){
 			return 0;
 		}
 
-		if ((shm = (lineDistance_t *)shmat(shmId, NULL, 0)) == (lineDistance_t *) -1){
+		if (( shm = (lineDistance_t *)shmat(shmId, NULL, 0)) == (lineDistance_t *) -1){
 			std::cerr << "Init: Failed to attach shared memory (" << shmId << ")" << std::endl; 
 			return 0;
 		}
+		cout << "\n\nShm in setup shm: "<< shm << endl;
 		return shmId;
 	}
 	return 0;
@@ -419,14 +460,10 @@ void print_line_distances(vector<pair<uint, float>> &lineDistances){
 }
 
 void print_shm(lineDistance_t *start, const lineDistance_t *end){
-
 	if(end != NULL){
-		while(start != end){
-
-			cout<<"here!!"<<endl;
-			cout << (*start).lineNum << ": " << (*start).distance <<endl;
-			// Can't get these ^^^ vvvvv lines to print.  What is wrong??
-			cout << "Shm info: start: " << start << " end: " << end << endl;
+		cout << "Shm info: start: " << start << " end: " << end << endl;
+		while(start < end){
+			cout << (start)[0].lineNum << ": " << (start)[0].distance <<endl;
 			start++;
 		}
 	}
