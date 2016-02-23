@@ -39,6 +39,7 @@ typedef struct childInfo{
 	uint endLine;
 	uint shmStartLine;
 	uint shmEndline;
+	uint queryLine;	// Line of queried filename, so the result doent show up as 0
 }childInfo_t;
 
 int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines);
@@ -53,7 +54,7 @@ void print_filenames(map<string, uint> &fnames);
 bool isLine(const pair<uint, vector<float>> pair, uint lineNum);
 void print_line_distances(vector<pair<uint, float>> &lineDistances);
 void print_shm(lineDistance_t *start, const lineDistance_t *end);
-bool comp(pair<uint, float> el1, pair<uint, float> el2);
+bool comp(pair<uint, float> &el1, pair<uint, float> &el2);
 
 
 
@@ -234,6 +235,8 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			return false;
 		}
 
+		uint queryLine = fnames[queryFilename];
+		cout << "\n\nLine file is on: " << queryLine << endl;
 		// Test L1 norm function
 		// float difference = compute_L1_norm( &((*files)[queryFilename]), &((*files)["agricultural/agricultural05.tif"]) );
 		// cout << "\n\nDifference: " << difference << endl;
@@ -267,7 +270,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		int step = (int)(numLines / numProcesses);
 		// int stepSize = step * sizeof(lineDistance_t);
 		for(i = 0 ; i < numProcesses ; i++){
-			childInfo[i].start = &shm[i];
+			childInfo[i].start = &shm[i*numResults];
 			childInfo[i].startLine = step * i;
 			childInfo[i].shmStartLine = i * numResults;
 			// Last process takes extra 
@@ -276,10 +279,11 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 				childInfo[i].endLine = numLines;
 			}
 			else{
-				childInfo[i].end = &(shm[i+1]);
+				childInfo[i].end = &(shm[(i+1)*numResults]);
 				childInfo[i].endLine = (step *(i+1));
 			}
 			childInfo[i].shmEndline = (i+1)*numResults;
+			childInfo[i].queryLine = queryLine;
 		}
 
 		// Get target vector of file name
@@ -325,6 +329,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		// Gather data in shared memory and get final solution
 		vector<pair<uint, float>> lineDistances;
 		lineDistance_t *shmStart = shm;
+		print_shm(shmStart, shmEnd);
 		while(shmStart < shmEnd){
 			uint tempLine = shmStart[0].lineNum;
 			float tempDist = shmStart[0].distance;
@@ -332,9 +337,15 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			shmStart++;
 		}
 		// Sort aggregated results and cut off
-		sort_heap(lineDistances.begin(), lineDistances.end(), &comp);
-		lineDistances.resize(numResults);
+		cout << "\n\nFinal distances before sort and cutoff:"<< endl;
 
+		sort(lineDistances.begin(), lineDistances.end(), &comp);
+		print_line_distances(lineDistances);
+
+		lineDistances.resize(numResults);
+		cout << "\n\nFinal line distances: "<< endl;
+
+		print_line_distances(lineDistances);
 		// Match with filenames
 
 
@@ -361,27 +372,33 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 		}
 		return sum/size;
 	}
-	return 0;
+	return -1;
 }
 
 bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float>>> &lines, int numResults){
 	// cout << "Process "<< processNumber << endl;
-	// cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
+	cout << "Child info: start: " << childInfo.start << " end: " << childInfo.end << endl;
 	cout << "Child info: startLine: " << childInfo.startLine << " endLine: " << childInfo.endLine << endl;
+	cout << "Child info: shmStartLine: " << childInfo.shmStartLine << " shmEndLine: " << childInfo.shmEndline << endl;
 
 	
 	// process files
 	uint startLine = childInfo.startLine;
 	uint endLine = childInfo.endLine;
+	uint queryLine = childInfo.queryLine;
 
 	// Create vecator of pair <uint, float> to heapify later
 	vector<pair<uint, float>> lineDistances;
 
 	// iterate though lines to get distances
 	while(startLine < endLine){
-		float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
-		lineDistances.push_back({startLine, temp});
-
+		if(startLine != queryLine){
+			float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
+			lineDistances.push_back({startLine, temp});
+		}
+		else{
+			cout<<"\n\nrefused to process query line"<< queryLine << endl;
+		}
 		startLine++;
 	}
 	
@@ -389,30 +406,24 @@ bool do_work(int processNumber, const childInfo_t childInfo, const vector<float>
 	// print_line_distances(lineDistances);
 
 	// Sort to get top results (shortest distance)
-	sort_heap(lineDistances.begin(), lineDistances.end(), &comp);
-	// sort_heap()
+	sort(lineDistances.begin(), lineDistances.end(), &comp);
+
 	lineDistances.resize(numResults);
-	// print_line_distances(lineDistances);
+	cout << "\n\nTemp line distances: "<< endl;
+	print_line_distances(lineDistances);
 
 	// Store in shared memory
 	lineDistance_t *shm = childInfo.start;
-	lineDistance_t *shmEnd = childInfo.end;
-	uint shmStartLine = childInfo.shmStartLine;
-	uint shmEndline = childInfo.shmEndline;
+	// lineDistance_t *shmEnd = childInfo.end;
+	// uint shmStartLine = childInfo.shmStartLine;
+	// uint shmEndline = childInfo.shmEndline;
 
-	for(int i = shmStartLine, j = 0 ; i < shmEndline ; i++, j++){
+	for(int i = 0, j = 0 ; i < numResults ; i++, j++){
 		shm[i].lineNum = lineDistances[j].first;
 		shm[i].distance = lineDistances[j].second;
-
+		cout << "\nProcess " << processNumber << " printing: " << lineDistances[j].first << ", " << lineDistances[j].second << " at " << &shm[i] << endl;
 	}
-
-
-	// if(processNumber == 4){
-	print_shm(shm, shmEnd);
-	// }
-	
-
-
+	// print_shm(shm, shmEnd);
 	return true;
 }
 
@@ -470,7 +481,7 @@ void print_shm(lineDistance_t *start, const lineDistance_t *end){
 	return;
 }
 
-bool comp(pair<uint, float> el1, pair<uint, float> el2){
+bool comp(pair<uint, float> &el1, pair<uint, float> &el2){
 	return (el1.second < el2.second);
 }
 
