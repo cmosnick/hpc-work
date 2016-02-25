@@ -84,8 +84,6 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			return false;
 		}
 
-		// uint queryLine = fnames[queryFilename];
-
 		// Set up shared memory
 		int numLines = fnames.size();
 		lineDistance_t *shm = NULL;
@@ -126,7 +124,6 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 				childInfo[i].endLine = (step *(i+1));
 			}
 			childInfo[i].shmEndline = (i+1)*numResults;
-			// childInfo[i].queryLine = queryLine;
 		}
 
 		// Get target vector of file name
@@ -164,8 +161,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		// Wait for processes to finish
 		int status;
 		for( i = 0 ; i < numProcesses ; i++){
-			/*pid_t pid = */wait(&status);
-			// cout << "Child with PID " << (long)pid << " exited with status ." << status << "\n" << endl;
+			wait(&status);
 		}
 		cout << "\n\nProcesses are finished!" << endl;
 
@@ -182,11 +178,9 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			shmStart++;
 		}
 		// Sort aggregated results and cut off
-		sort(lineDistances.begin(), lineDistances.end(), &comp);
+		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
 		lineDistances.resize(numResults);
-		
-		// cout << "\n\nFinal line distances: "<< endl;
-		// print_line_distances(lineDistances);
 		
 		// Match with filenames, print
 		vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
@@ -229,44 +223,31 @@ bool do_work(int processNumber, const childInfo_t childInfo, const vector<float>
 	// process files
 	uint startLine = childInfo.startLine;
 	uint endLine = childInfo.endLine;
-	// uint queryLine = childInfo.queryLine;
 
 	// Create vecator of pair <uint, float> to heapify later
 	vector<pair<uint, float> > lineDistances;
 
 	// iterate though lines to get distances
 	while(startLine < endLine){
-		// if(startLine != queryLine){
-			float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
-			pair<uint, float> tempPair;
-			tempPair.first = startLine;
-			tempPair.second = temp;
-			lineDistances.push_back(tempPair);
-		// }
-		// else{
-		// 	// cout<<"\n\nrefused to process query line"<< queryLine << endl;
-		// }
+		float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
+		pair<uint, float> tempPair;
+		tempPair.first = startLine;
+		tempPair.second = temp;
+		lineDistances.push_back(tempPair);
 		startLine++;
 	}
 
 	// Sort to get top results (shortest distance)
-	sort(lineDistances.begin(), lineDistances.end(), &comp);
+	vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
 	lineDistances.resize(numResults);
-	// cout << "\n\nTemp line distances: "<< endl;
-	// print_line_distances(lineDistances);
 
 	// Store in shared memory
 	lineDistance_t *shm = childInfo.start;
-	// lineDistance_t *shmEnd = childInfo.end;
-	// uint shmStartLine = childInfo.shmStartLine;
-	// uint shmEndline = childInfo.shmEndline;
-
 	for(int i = 0, j = 0 ; i < numResults ; i++, j++){
 		shm[i].lineNum = lineDistances[j].first;
 		shm[i].distance = lineDistances[j].second;
-		// cout << "\nProcess " << processNumber << " printing: " << lineDistances[j].first << ", " << lineDistances[j].second << " at " << &shm[i] << endl;
 	}
-	// print_shm(shm, shmEnd);
 	return true;
 }
 
