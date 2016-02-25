@@ -1,10 +1,3 @@
-// #include <iostream>
-// #include <cstdlib>
-// #include <algorithm>
-// #include <chrono>
-
-// #include <boost/numeric/ublas/io.hpp>
-
 #include "../src/main.hpp"
 
 int main(int argc, char * argv[])
@@ -27,7 +20,7 @@ int main(int argc, char * argv[])
 	vector< pair< uint, vector<float> > > lines;
 
 
-// Change this to 1 to enable larger file
+// Change this to 1 to enable larger file, should modify to name of larger file.  I haven't tried it out yet.
 #if 0
 	const char fname[16] = "../8400_HPC.csv";
 #else
@@ -61,8 +54,6 @@ int main(int argc, char * argv[])
 		double avgMs = (double) std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / (1000000 * ITR);
 
 		// Compute Ops and Elements
-		// totally wring estimaytion of operations
-		// const unsigned long opsMaybe = numLines * NUM_FLOATS;
 		const unsigned long elements = numLines;
 		// Log timing statistics
 		std::cout << "------------------------------------------------------------------" << std::endl
