@@ -8,7 +8,7 @@ int main(int argc, char * argv[])
 	// ---------------------------------------------
 	std::cout << "Running Timing Analysis" << std::endl
 		  << "-----------------------" << std::endl;
-	const unsigned int ITR= 100;
+	const unsigned int ITR= 1000;
 	const unsigned int PROCS = 12;
 	const unsigned int RESULTS = 100;
 	
@@ -48,7 +48,7 @@ int main(int argc, char * argv[])
 		for (unsigned int i = 0; i < ITR; ++i)
 		{
 			// This is an assignemnt of a call to a object functor;
-			process_query(fnames, lines, queryFilename, RESULTS, i);
+			process_query(fnames, lines, queryFilename, RESULTS, i, false);
 		}
                 std::chrono::high_resolution_clock::time_point stop = c.now();
 		double avgMs = (double) std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / (1000000 * ITR);
