@@ -76,7 +76,7 @@ void print_vector(vector<float> *vector){
 	}
 }
 
-bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses){
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses, bool partial){
 	if(!fnames.empty() && !lines.empty() && numResults > 0 && numProcesses > 0){
 		// Check that requested file to query is in csv file
 		if(fnames.count(queryFilename) == 0){
@@ -144,7 +144,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			if(pid >= 0){
 				if(pid == 0){	// Child process
 					// call helper on partition
-					do_work(i+1, childInfo[i], queryFloats, lines, numResults);
+					do_work(i+1, childInfo[i], queryFloats, lines, numResults, partial);
 					exit(0);
 				}
 				else{			// Parent process
@@ -178,9 +178,15 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			shmStart++;
 		}
 		// Sort aggregated results and cut off
-		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-		lineDistances.resize(numResults);
+		if(partial){
+			vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+			partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
+			lineDistances.resize(numResults);
+		}
+		else{
+			sort(lineDistances.begin(), lineDistances.end(), &comp);
+			lineDistances.resize(numResults);
+		}
 		
 		// Match with filenames, print
 		vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
@@ -219,8 +225,7 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 	return -1;
 }
 
-bool do_work(int processNumber, const childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults){
-	// process files
+bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults, bool partial){	// process files
 	uint startLine = childInfo.startLine;
 	uint endLine = childInfo.endLine;
 
@@ -238,9 +243,15 @@ bool do_work(int processNumber, const childInfo_t childInfo, const vector<float>
 	}
 
 	// Sort to get top results (shortest distance)
-	vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-	lineDistances.resize(numResults);
+	if(partial){
+		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
+		lineDistances.resize(numResults);
+	}
+	else{
+		sort(lineDistances.begin(), lineDistances.end(), &comp);
+		lineDistances.resize(numResults);
+	}
 
 	// Store in shared memory
 	lineDistance_t *shm = childInfo.start;

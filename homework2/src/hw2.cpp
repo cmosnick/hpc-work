@@ -3,7 +3,7 @@
 int main(int argc, char const *argv[])
 {
 	// Check args
-	if(argc < 5){
+	if(argc < 6){
 		cout << "Please enter (1) a filename query\n \
 		(2) a csv input file\n \
 		(3) the number fo results to generate\n\
@@ -20,6 +20,7 @@ int main(int argc, char const *argv[])
 	Part zero: Get args
 	****************************/
 	string queryFilename(argv[1]);
+	bool partialsort = argv[5];
 	// number of results
 	int numResults = 0;
 	if(is_float(argv[3])){
@@ -72,7 +73,7 @@ int main(int argc, char const *argv[])
 	****************************/
 	start = std::chrono::system_clock::now();
 
-	bool success = process_query(fnames, lines, queryFilename, numResults, numProcesses);
+	bool success = process_query(fnames, lines, queryFilename, numResults, numProcesses, partialsort);
 
     end = std::chrono::system_clock::now();
     timeElapsed = end-start;
