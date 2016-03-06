@@ -1,9 +1,11 @@
+// #define header
 #include <stdlib.h>
 #include <iostream>
 #include <map>
 #include <vector>
 #include <math.h>
 #include <sys/shm.h>
+#include <boost/thread.hpp>
 
 using namespace std;
 
@@ -39,12 +41,12 @@ typedef struct childInfo{
 }childInfo_t;
 
 
-int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines);
+int read_in_file(FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines);
 bool is_float(const char* token);
 void print_vector(std::vector<float> *vector);
-bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses, bool partial);
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses);
 float compute_L1_norm(const vector<float> *v1, const vector<float> *v2);
-bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults, bool partial);
+bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults);
 bool shm_setup(size_t size, lineDistance_t *shm);
 void print_lines(vector<pair<uint, vector<float> > > &lines);
 void print_filenames(map<string, uint> &fnames);

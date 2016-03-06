@@ -1,10 +1,11 @@
 #ifndef header
 #include "hw3.hpp"
+#include "MosnickThread.hpp"
 #endif
 
 // Read csv into map of vectors
-int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines){
-	if(files && infile){
+int read_in_file(FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines){
+	if(infile){
 		char *line = (char*)malloc(sizeof(char) * LINE_SIZE);
 		char *token = NULL;
 
@@ -35,7 +36,7 @@ int read_in_file(map< string, vector<float> > *files, FILE *infile, map<string, 
 				}while( i <= NUM_FLOATS);
 
 				// Add fname and vector to map
-				(*files)[fname] = floats;
+				// (*files)[fname] = floats;
 				pair <uint, vector<float> > temp(numLines, floats);
 				lines.push_back(temp);
 			}
@@ -76,7 +77,7 @@ void print_vector(vector<float> *vector){
 	}
 }
 
-bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses, bool partial){
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses){
 	if(!fnames.empty() && !lines.empty() && numResults > 0 && numProcesses > 0){
 		// Check that requested file to query is in csv file
 		if(fnames.count(queryFilename) == 0){
@@ -144,7 +145,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			if(pid >= 0){
 				if(pid == 0){	// Child process
 					// call helper on partition
-					do_work(i+1, childInfo[i], queryFloats, lines, numResults, partial);
+					do_work(i+1, childInfo[i], queryFloats, lines, numResults);
 					exit(0);
 				}
 				else{			// Parent process
@@ -178,15 +179,10 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			shmStart++;
 		}
 		// Sort aggregated results and cut off
-		if(partial){
-			vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-			partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-			lineDistances.resize(numResults);
-		}
-		else{
-			sort(lineDistances.begin(), lineDistances.end(), &comp);
-			lineDistances.resize(numResults);
-		}
+		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
+		lineDistances.resize(numResults);
+		
 		
 		// Match with filenames, print
 		vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
@@ -225,7 +221,7 @@ float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
 	return -1;
 }
 
-bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults, bool partial){	// process files
+bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults){	// process files
 	uint startLine = childInfo.startLine;
 	uint endLine = childInfo.endLine;
 
@@ -243,15 +239,10 @@ bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targ
 	}
 
 	// Sort to get top results (shortest distance)
-	if(partial){
-		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-		lineDistances.resize(numResults);
-	}
-	else{
-		sort(lineDistances.begin(), lineDistances.end(), &comp);
-		lineDistances.resize(numResults);
-	}
+	vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
+	lineDistances.resize(numResults);
+
 
 	// Store in shared memory
 	lineDistance_t *shm = childInfo.start;

@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
 	Part zero: Get args
 	****************************/
 	string queryFilename(argv[1]);
-	bool partialsort = argv[5];
+	
 	// number of results
 	int numResults = 0;
 	if(is_float(argv[3])){
@@ -44,7 +44,6 @@ int main(int argc, char const *argv[])
 	Part one: Read in file, store in map
 	****************************/
 	// Make map of files
-	map< string, vector<float> > files;
 	map< string, uint > fnames;
 	vector< pair< uint, vector<float> > > lines;
 
@@ -52,7 +51,7 @@ int main(int argc, char const *argv[])
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-	int numLines = read_in_file(&files, infile, fnames, lines);
+	int numLines = read_in_file(infile, fnames, lines);
 	
 	end = std::chrono::system_clock::now();
     std::chrono::duration<double> timeElapsed = end-start;
@@ -72,7 +71,7 @@ int main(int argc, char const *argv[])
 	****************************/
 	start = std::chrono::system_clock::now();
 
-	bool success = process_query(fnames, lines, queryFilename, numResults, numProcesses, partialsort);
+	bool success = process_query(fnames, lines, queryFilename, numResults, numProcesses);
 
     end = std::chrono::system_clock::now();
     timeElapsed = end-start;
