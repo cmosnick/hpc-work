@@ -7,8 +7,6 @@ typedef struct lineDistance{
 	float distance;
 }lineDistance_t;
 
-// class MosnickThread;
-
 namespace mosnick{
 	class MosnickThread{
 	public:
@@ -27,16 +25,11 @@ namespace mosnick{
 		// Size to compute
 		unsigned int _numResults;
 
-		// index we are currently working on
-		// unsigned int _index;
-
 		// Step size for block partitioning
 		unsigned int _step;
 
 		// Total numebr of line
 		unsigned int _totalLines;
-
-		// unsigned int _queryLineNum;
 
 		const std::vector<float> *_queryFloats;
 

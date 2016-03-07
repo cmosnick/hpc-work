@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (hw3)
 
-set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Werror -g -ggdb")
-#set(CMAKE_CXX_FLAGS "-std=c++0x -O0 -O2")
+#set(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Werror -g -ggdb")
+set(CMAKE_CXX_FLAGS "-std=c++0x -O0 -O2")
 
 FIND_PACKAGE( Boost 1.60 COMPONENTS thread system filesystem REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})

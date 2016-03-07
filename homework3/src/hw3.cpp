@@ -1,8 +1,4 @@
-#ifndef header
 #include "hw3.hpp"
-// #include <boost/thread.hpp>
-
-#endif
 
 // Read csv into map of vectors
 int read_in_file(FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines){
@@ -69,15 +65,6 @@ bool is_float(const char* token){
 	return false;
 }
 
-// Print vector of floats, could be anything really though
-void print_vector(vector<float> *vector){
-	size_t size = (*vector).size();
-	cout << "\n";
-	for(int i = 0 ; i< size ; i++){
-		cout<<(*vector)[i] << ", ";
-	}
-}
-
 bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses){
 	if(!fnames.empty() && !lines.empty() && numResults > 0 && numProcesses > 0){
 		// Check that requested file to query is in csv file
@@ -116,6 +103,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 
 		// Gather threads
 		tg.join_all();
+		cout<< "joined!" << endl;
 
 		// Gather data in threads and get final solution
 		vector<pair<uint, float> > lineDistances;
@@ -141,89 +129,13 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		}
 
 		// Free thread objects
-		for(int i = 0 ; i < numProcesses ; i++){
-			delete mosnickThreads[i];
-		}
+		// for(int i = 0 ; i < numProcesses ; i++){
+		// 	delete mosnickThreads[i];
+		// }
 
 		return true;
 	}
 	return false;
-}
-
-// Computes the L1 norm between two vectors of floats
-// Returns 0 on error or if vectors are exactly alike
-// float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
-// 	if(v1 && v2){
-// 		int s1 = (*v1).size(),
-// 			s2 = (*v2).size(),
-// 			i=0;
-// 		// Take smallest size
-// 		int size = (s1 < s2) ? s1:s2;
-// 		if(size != NUM_FLOATS){
-// 			cout << "\nSize = " << size << endl;
-// 		}
-// 		float sum = 0;
-// 		for( ; i < size ; i++){
-// 			sum += fabs( ((*v1)[i] - (*v2)[i]) );
-// 		}
-// 		return (float)sum/size;
-// 	}
-// 	return -1;
-// }
-
-// bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults){	// process files
-// 	uint startLine = childInfo.startLine;
-// 	uint endLine = childInfo.endLine;
-
-// 	// Create vecator of pair <uint, float> to heapify later
-// 	vector<pair<uint, float> > lineDistances;
-
-// 	// iterate though lines to get distances
-// 	while(startLine < endLine){
-// 		float temp = mosnick::MosnickThread::compute_L1_norm(targetVector, &(lines[startLine].second));
-// 		pair<uint, float> tempPair;
-// 		tempPair.first = startLine;
-// 		tempPair.second = temp;
-// 		lineDistances.push_back(tempPair);
-// 		startLine++;
-// 	}
-
-// 	// Sort to get top results (shortest distance)
-// 	vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-// 	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &mosnick::MosnickThread::comp);
-// 	lineDistances.resize(numResults);
-
-
-// 	// Store in shared memory
-// 	lineDistance_t *shm = childInfo.start;
-// 	for(int i = 0, j = 0 ; i < numResults ; i++, j++){
-// 		shm[i].lineNum = lineDistances[j].first;
-// 		shm[i].distance = lineDistances[j].second;
-// 	}
-// 	return true;
-// }
-
-
-void print_filenames(map<string, uint> &fnames){
-	map<string, uint>::iterator itr = fnames.begin();
-	for( ; itr != fnames.end() ; itr++){
-		cout << itr->first << ": " << itr->second << endl;
-	}
-}
-
-void print_lines(vector<pair<uint, vector<float> > > &lines){
-	int size = lines.size();
-	for(int i=0 ; i<size ; i++){
-		cout << lines[i].first << ": " << endl;
-	}
-}
-
-void print_line_distances(vector<pair<uint, float> > &lineDistances){
-	vector<pair<uint, float> >::iterator itr = lineDistances.begin();
-	while(itr < lineDistances.end()){
-		cout << itr->first << ":  " << itr->second << endl;
-		itr++;
-	}
 }
 
 string find_fname_by_linenum(map<string, uint> &fnames, uint lineNum){

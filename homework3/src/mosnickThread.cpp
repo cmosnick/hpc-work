@@ -13,11 +13,6 @@ _numResults(numResults), _step(step), _totalLines(totalLines), _queryFloats(quer
 	}
 	std::cout << "Step size: " << _step << std::endl;
 
-
-	results.resize(numResults);
-
-	// more error checking
-
 }
 
 // Destructor
@@ -26,7 +21,7 @@ mosnick::MosnickThread::~MosnickThread(){
 	// Do extra destruction
 }
 
-// Block partition method
+// Block partition method: will complete for testing against interleave analysis
 void mosnick::MosnickThread::doWorkBlock(unsigned int startingIndex, unsigned int numberToProcess){
 
 	// return 0;
@@ -49,6 +44,7 @@ void mosnick::MosnickThread::doWorkInterleave(unsigned int startingIndex, const 
 		currentLine += _step;
 	}
 
+	std::cout<< "Got full results" << std::endl;
 	// Sort to get top results (shortest distance)
 	std::vector<std::pair<uint, float> >::iterator middle = lineDistances.begin() + _numResults;
 	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &MosnickThread::comp);
@@ -56,7 +52,8 @@ void mosnick::MosnickThread::doWorkInterleave(unsigned int startingIndex, const 
 
 	results.clear();
 	for(int i=0 ; i < _numResults ; i++){
-		results.push_back(lineDistances[i]);
+		std::pair<uint, float> temp = lineDistances[i];
+		results.push_back(temp);
 	}
 	return;
 }
