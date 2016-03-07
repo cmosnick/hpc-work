@@ -6,6 +6,8 @@
 #include <math.h>
 #include <sys/shm.h>
 #include <boost/thread.hpp>
+#include "MosnickThread.hpp"
+
 
 using namespace std;
 
@@ -14,6 +16,8 @@ using namespace std;
 #define FLOAT_CHARS 47
 #define LINE_SIZE FNAME_SIZE + ( NUM_FLOATS * (FLOAT_CHARS + 3) )
 #define DELIMS ","
+
+class MosnickThread;
 
 typedef struct fnameToLineNum{
 	char fname[FNAME_SIZE];
@@ -47,12 +51,10 @@ void print_vector(std::vector<float> *vector);
 bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses);
 float compute_L1_norm(const vector<float> *v1, const vector<float> *v2);
 bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults);
-bool shm_setup(size_t size, lineDistance_t *shm);
 void print_lines(vector<pair<uint, vector<float> > > &lines);
 void print_filenames(map<string, uint> &fnames);
 bool isLine(const pair<uint, vector<float> > pair, uint lineNum);
 void print_line_distances(vector<pair<uint, float> > &lineDistances);
-void print_shm(lineDistance_t *start, const lineDistance_t *end);
 bool comp(pair<uint, float> &el1, pair<uint, float> &el2);
 string find_fname_by_linenum(map<string, uint> &fnames, uint lineNum);
 

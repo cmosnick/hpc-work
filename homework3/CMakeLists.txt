@@ -8,7 +8,7 @@ FIND_PACKAGE( Boost 1.60 COMPONENTS thread system filesystem REQUIRED )
 include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(${src})
-set(SOURCES src/hw3.cpp)
+set(SOURCES src/hw3.cpp src/MosnickThread.cpp)
 
 add_executable(homework3 src/main.cpp ${SOURCES})
 

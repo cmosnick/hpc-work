@@ -1,6 +1,7 @@
 #ifndef header
 #include "hw3.hpp"
-#include "MosnickThread.hpp"
+// #include <boost/thread.hpp>
+
 #endif
 
 // Read csv into map of vectors
@@ -85,48 +86,6 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			return false;
 		}
 
-		// Set up shared memory
-		int numLines = fnames.size();
-		lineDistance_t *shm = NULL;
-		int aggResults = numResults * numProcesses;
-		size_t shmsize = sizeof(lineDistance_t)*aggResults;
-		key_t shmKey = 123456;
-		int shmId;
-		int shmFlag = IPC_CREAT | 0666; // Flag to create with rw permissions
-		
-		if ((shmId = shmget(shmKey, shmsize, shmFlag)) < 0){
-			std::cerr << "Init: Failed to initialize shared memory (" << shmId << ")" << std::endl; 
-			return 0;
-		}
-
-		if (( shm = (lineDistance_t *)shmat(shmId, NULL, 0)) == (lineDistance_t *) -1){
-			std::cerr << "Init: Failed to attach shared memory (" << shmId << ")" << std::endl; 
-			return 0;
-		}
-
-
-		// Setup steps to divide shared memory
-		int i=0;
-		lineDistance_t *shmEnd = &(shm[aggResults]);
-		childInfo_t childInfo[numProcesses];
-		int step = (int)(numLines / numProcesses);
-		// int stepSize = step * sizeof(lineDistance_t);
-		for(i = 0 ; i < numProcesses ; i++){
-			childInfo[i].start = &shm[i*numResults];
-			childInfo[i].startLine = step * i;
-			childInfo[i].shmStartLine = i * numResults;
-			// Last process takes extra 
-			if( (i+1) == numProcesses ){
-				childInfo[i].end = shmEnd;
-				childInfo[i].endLine = numLines;
-			}
-			else{
-				childInfo[i].end = &(shm[(i+1)*numResults]);
-				childInfo[i].endLine = (step *(i+1));
-			}
-			childInfo[i].shmEndline = (i+1)*numResults;
-		}
-
 		// Get target vector of file name
 		uint queryLineNum = fnames[queryFilename];
 		vector<pair<uint, vector<float> > >::iterator itr = lines.begin();
@@ -136,65 +95,61 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			}
 			itr++;
 		}
-		const vector<float> *queryFloats = &(itr->second);
 
-		// Fork process into worker processes
-		pid_t pids[numProcesses];
-		for(i = 0 ; i < numProcesses ; i++){
-			pid_t pid = fork();
-			if(pid >= 0){
-				if(pid == 0){	// Child process
-					// call helper on partition
-					do_work(i+1, childInfo[i], queryFloats, lines, numResults);
-					exit(0);
-				}
-				else{			// Parent process
-					pids[i] = pid;
-				}
-			}
-			else{
-				cout << "\n\nError: fork failed!" << endl;
-				// return false;
-				break;
-			}
+		// Create vector of thread objects
+		std::vector<mosnick::MosnickThread *> mosnickThreads(numProcesses);
+		for(int i = 0 ; i < numProcesses ; i++){
+			mosnickThreads[i] = new mosnick::MosnickThread(numResults, numProcesses);
+		}
+		// Create thread group
+		boost::thread_group tg;
+
+
+		// Create and call threads
+		for(int i = 0 ; i < numProcesses ; i++){
+			mosnick::MosnickThread *threadObj = (mosnick::MosnickThread *)mosnickThreads[i];
+			boost::thread *thread = new boost::thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i));
+			tg.add_thread( thread );
 		}
 
-		// Wait for processes to finish
-		int status;
-		for( i = 0 ; i < numProcesses ; i++){
-			wait(&status);
-		}
-		cout << "\n\nProcesses are finished!" << endl;
+		// Gather threads
+		tg.join_all();
 
 		// Gather data in shared memory and get final solution
-		vector<pair<uint, float> > lineDistances;
-		lineDistance_t *shmStart = shm;
-		while(shmStart < shmEnd){
-			uint tempLine = shmStart[0].lineNum;
-			float tempDist = shmStart[0].distance;
-			pair<uint, float> tempPair;
-			tempPair.first = tempLine;
-			tempPair.second = tempDist;
-			lineDistances.push_back(tempPair);
-			shmStart++;
-		}
+		// vector<pair<uint, float> > lineDistances;
+		// lineDistance_t *shmStart = shm;
+		// while(shmStart < shmEnd){
+		// 	uint tempLine = shmStart[0].lineNum;
+		// 	float tempDist = shmStart[0].distance;
+		// 	pair<uint, float> tempPair;
+		// 	tempPair.first = tempLine;
+		// 	tempPair.second = tempDist;
+		// 	lineDistances.push_back(tempPair);
+		// 	shmStart++;
+		// }
 		// Sort aggregated results and cut off
-		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-		lineDistances.resize(numResults);
+		// vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+		// partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
+		// lineDistances.resize(numResults);
 		
 		
 		// Match with filenames, print
-		vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
-		while(lDItr < lineDistances.end()){
-			cout << find_fname_by_linenum(fnames, lDItr->first);
-			cout << ":  " << lDItr->second << endl;
-			lDItr++;
+		// vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
+		// while(lDItr < lineDistances.end()){
+		// 	cout << find_fname_by_linenum(fnames, lDItr->first);
+		// 	cout << ":  " << lDItr->second << endl;
+		// 	lDItr++;
+		// }
+
+		// // Destroy shared memory
+		// shmctl(shmId, IPC_RMID, NULL);
+		// shmdt(shm);
+
+		// Free thread objects
+		for(int i = 0 ; i < numProcesses ; i++){
+			delete mosnickThreads[i];
 		}
 
-		// Destroy shared memory
-		shmctl(shmId, IPC_RMID, NULL);
-		shmdt(shm);
 		return true;
 	}
 	return false;
@@ -253,26 +208,6 @@ bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targ
 	return true;
 }
 
-// Shm will be an array of [linenumber, dist] structs
-bool shm_setup(size_t size, lineDistance_t *shm){
-	if(size > 0){
-		key_t shmKey = 123456;
-		int shmId;
-		int shmFlag = IPC_CREAT | 0666; // Flag to create with rw permissions
-		if ((shmId = shmget(shmKey, size, shmFlag)) < 0){
-			std::cerr << "Init: Failed to initialize shared memory (" << shmId << ")" << std::endl; 
-			return 0;
-		}
-
-		if (( shm = (lineDistance_t *)shmat(shmId, NULL, 0)) == (lineDistance_t *) -1){
-			std::cerr << "Init: Failed to attach shared memory (" << shmId << ")" << std::endl; 
-			return 0;
-		}
-		cout << "\n\nShm in setup shm: "<< shm << endl;
-		return shmId;
-	}
-	return 0;
-}
 
 void print_filenames(map<string, uint> &fnames){
 	map<string, uint>::iterator itr = fnames.begin();
@@ -294,17 +229,6 @@ void print_line_distances(vector<pair<uint, float> > &lineDistances){
 		cout << itr->first << ":  " << itr->second << endl;
 		itr++;
 	}
-}
-
-void print_shm(lineDistance_t *start, const lineDistance_t *end){
-	if(end != NULL){
-		cout << "Shm info: start: " << start << " end: " << end << endl;
-		while(start < end){
-			cout << (start)[0].lineNum << ": " << (start)[0].distance <<endl;
-			start++;
-		}
-	}
-	return;
 }
 
 bool comp(pair<uint, float> &el1, pair<uint, float> &el2){

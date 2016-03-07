@@ -1,14 +1,17 @@
 #ifndef _MOSNICKTHREAD_HPP
 #define _MOSNICKTHREAD_HPP
+#include <boost/thread/thread.hpp>
+
+class MosnickThread;
 
 namespace mosnick{
 	class MosnickThread{
 	public:
-		MosnickThread(unsigned int N);
+		MosnickThread(unsigned int N, unsigned int step);
 		~MosnickThread();
-		unsigned long doWorkBlock() const;
-		unsigned long doWorkInterleave() const;
-		void operator()();
+		void doWorkBlock(unsigned int startingIndex, unsigned numberToProcess);
+		void doWorkInterleave(unsigned int startingIndex);
+		boost::thread* do_work( int startingIndex );
 	private:
 		
 		// Size to compute
@@ -19,6 +22,8 @@ namespace mosnick{
 
 		// Step size for block partitioning
 		int _step;
+
+		boost::thread _thread;
 	};
 } // End namespace mosnick
 #endif
