@@ -2,28 +2,44 @@
 #define _MOSNICKTHREAD_HPP
 #include <boost/thread/thread.hpp>
 
-class MosnickThread;
+typedef struct lineDistance{
+	uint lineNum;
+	float distance;
+}lineDistance_t;
+
+// class MosnickThread;
 
 namespace mosnick{
 	class MosnickThread{
 	public:
-		MosnickThread(unsigned int N, unsigned int step);
+		MosnickThread(unsigned int numResults, unsigned int step, unsigned int totalLines, const std::vector<float> *queryFloats);
 		~MosnickThread();
 		void doWorkBlock(unsigned int startingIndex, unsigned numberToProcess);
-		void doWorkInterleave(unsigned int startingIndex);
-		boost::thread* do_work( int startingIndex );
+		void doWorkInterleave(unsigned int startingIndex, const std::vector<std::pair<uint, std::vector<float> > > &lines);
+		static float compute_L1_norm(const std::vector<float> *v1, const std::vector<float> *v2);
+		static bool comp(const std::pair<uint, float> &el1, const std::pair<uint, float> &el2);
+		
+		// Results
+		std::vector<std::pair<uint, float>> results;
+
 	private:
 		
 		// Size to compute
-		unsigned int _N;
+		unsigned int _numResults;
 
 		// index we are currently working on
-		int _index;
+		// unsigned int _index;
 
 		// Step size for block partitioning
-		int _step;
+		unsigned int _step;
 
-		boost::thread _thread;
+		// Total numebr of line
+		unsigned int _totalLines;
+
+		// unsigned int _queryLineNum;
+
+		const std::vector<float> *_queryFloats;
+
 	};
 } // End namespace mosnick
 #endif

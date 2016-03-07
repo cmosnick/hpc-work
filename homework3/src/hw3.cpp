@@ -95,11 +95,13 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 			}
 			itr++;
 		}
-
+		const vector<float> *queryFloats = &(itr->second);
+		
+		unsigned int totalLines = fnames.size();
 		// Create vector of thread objects
 		std::vector<mosnick::MosnickThread *> mosnickThreads(numProcesses);
 		for(int i = 0 ; i < numProcesses ; i++){
-			mosnickThreads[i] = new mosnick::MosnickThread(numResults, numProcesses);
+			mosnickThreads[i] = new mosnick::MosnickThread(numResults, numProcesses, totalLines, queryFloats);
 		}
 		// Create thread group
 		boost::thread_group tg;
@@ -108,42 +110,35 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		// Create and call threads
 		for(int i = 0 ; i < numProcesses ; i++){
 			mosnick::MosnickThread *threadObj = (mosnick::MosnickThread *)mosnickThreads[i];
-			boost::thread *thread = new boost::thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i));
+			boost::thread *thread = new boost::thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i, lines));
 			tg.add_thread( thread );
 		}
 
 		// Gather threads
 		tg.join_all();
 
-		// Gather data in shared memory and get final solution
-		// vector<pair<uint, float> > lineDistances;
-		// lineDistance_t *shmStart = shm;
-		// while(shmStart < shmEnd){
-		// 	uint tempLine = shmStart[0].lineNum;
-		// 	float tempDist = shmStart[0].distance;
-		// 	pair<uint, float> tempPair;
-		// 	tempPair.first = tempLine;
-		// 	tempPair.second = tempDist;
-		// 	lineDistances.push_back(tempPair);
-		// 	shmStart++;
-		// }
+		// Gather data in threads and get final solution
+		vector<pair<uint, float> > lineDistances;
+		// Copy contents of each thread object's results into congragated result.
+		for(int i = 0 ; i < numProcesses ; i++){
+			for(int j = 0 ; j < numResults ; j++){
+				lineDistances.push_back(mosnickThreads[i]->results[j]);
+			}
+		}
+
 		// Sort aggregated results and cut off
-		// vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-		// partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-		// lineDistances.resize(numResults);
+		vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+		partial_sort(lineDistances.begin(), middle, lineDistances.end(), &mosnick::MosnickThread::comp);
+		lineDistances.resize(numResults);
 		
 		
 		// Match with filenames, print
-		// vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
-		// while(lDItr < lineDistances.end()){
-		// 	cout << find_fname_by_linenum(fnames, lDItr->first);
-		// 	cout << ":  " << lDItr->second << endl;
-		// 	lDItr++;
-		// }
-
-		// // Destroy shared memory
-		// shmctl(shmId, IPC_RMID, NULL);
-		// shmdt(shm);
+		vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
+		while(lDItr < lineDistances.end()){
+			cout << find_fname_by_linenum(fnames, lDItr->first);
+			cout << ":  " << lDItr->second << endl;
+			lDItr++;
+		}
 
 		// Free thread objects
 		for(int i = 0 ; i < numProcesses ; i++){
@@ -157,56 +152,56 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 
 // Computes the L1 norm between two vectors of floats
 // Returns 0 on error or if vectors are exactly alike
-float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
-	if(v1 && v2){
-		int s1 = (*v1).size(),
-			s2 = (*v2).size(),
-			i=0;
-		// Take smallest size
-		int size = (s1 < s2) ? s1:s2;
-		if(size != NUM_FLOATS){
-			cout << "\nSize = " << size << endl;
-		}
-		float sum = 0;
-		for( ; i < size ; i++){
-			sum += fabs( ((*v1)[i] - (*v2)[i]) );
-		}
-		return (float)sum/size;
-	}
-	return -1;
-}
+// float compute_L1_norm(const vector<float> *v1, const vector<float> *v2){
+// 	if(v1 && v2){
+// 		int s1 = (*v1).size(),
+// 			s2 = (*v2).size(),
+// 			i=0;
+// 		// Take smallest size
+// 		int size = (s1 < s2) ? s1:s2;
+// 		if(size != NUM_FLOATS){
+// 			cout << "\nSize = " << size << endl;
+// 		}
+// 		float sum = 0;
+// 		for( ; i < size ; i++){
+// 			sum += fabs( ((*v1)[i] - (*v2)[i]) );
+// 		}
+// 		return (float)sum/size;
+// 	}
+// 	return -1;
+// }
 
-bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults){	// process files
-	uint startLine = childInfo.startLine;
-	uint endLine = childInfo.endLine;
+// bool do_work(int processNumber, childInfo_t childInfo, const vector<float> *targetVector, const vector<pair<uint, vector<float> > > &lines, int numResults){	// process files
+// 	uint startLine = childInfo.startLine;
+// 	uint endLine = childInfo.endLine;
 
-	// Create vecator of pair <uint, float> to heapify later
-	vector<pair<uint, float> > lineDistances;
+// 	// Create vecator of pair <uint, float> to heapify later
+// 	vector<pair<uint, float> > lineDistances;
 
-	// iterate though lines to get distances
-	while(startLine < endLine){
-		float temp = compute_L1_norm(targetVector, &(lines[startLine].second));
-		pair<uint, float> tempPair;
-		tempPair.first = startLine;
-		tempPair.second = temp;
-		lineDistances.push_back(tempPair);
-		startLine++;
-	}
+// 	// iterate though lines to get distances
+// 	while(startLine < endLine){
+// 		float temp = mosnick::MosnickThread::compute_L1_norm(targetVector, &(lines[startLine].second));
+// 		pair<uint, float> tempPair;
+// 		tempPair.first = startLine;
+// 		tempPair.second = temp;
+// 		lineDistances.push_back(tempPair);
+// 		startLine++;
+// 	}
 
-	// Sort to get top results (shortest distance)
-	vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
-	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &comp);
-	lineDistances.resize(numResults);
+// 	// Sort to get top results (shortest distance)
+// 	vector<pair<uint, float> >::iterator middle = lineDistances.begin() + numResults;
+// 	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &mosnick::MosnickThread::comp);
+// 	lineDistances.resize(numResults);
 
 
-	// Store in shared memory
-	lineDistance_t *shm = childInfo.start;
-	for(int i = 0, j = 0 ; i < numResults ; i++, j++){
-		shm[i].lineNum = lineDistances[j].first;
-		shm[i].distance = lineDistances[j].second;
-	}
-	return true;
-}
+// 	// Store in shared memory
+// 	lineDistance_t *shm = childInfo.start;
+// 	for(int i = 0, j = 0 ; i < numResults ; i++, j++){
+// 		shm[i].lineNum = lineDistances[j].first;
+// 		shm[i].distance = lineDistances[j].second;
+// 	}
+// 	return true;
+// }
 
 
 void print_filenames(map<string, uint> &fnames){
@@ -231,10 +226,6 @@ void print_line_distances(vector<pair<uint, float> > &lineDistances){
 	}
 }
 
-bool comp(pair<uint, float> &el1, pair<uint, float> &el2){
-	return (el1.second < el2.second);
-}
-
 string find_fname_by_linenum(map<string, uint> &fnames, uint lineNum){
 	map<string, uint>::iterator itr = fnames.begin();
 	for( ; itr != fnames.end() ; itr++){
@@ -244,24 +235,6 @@ string find_fname_by_linenum(map<string, uint> &fnames, uint lineNum){
 	}
 	return NULL;
 }
-
-
-
-/*Notes******************
-
-For processing: instead of map which is not contiguous,
-	use indexing data structure of fn=>line number
-	then use 2D array of floats
-
-Try interleaving after doing block partitioning if I have time
-	Interleaving is better for cache issues
-
-Lookup by value with a set (can be used for wait with pids)
-
-Think about partial sort for sort:
-	fixed-size max heap, load sorted, throw out minvalue when bigger value comes in
-
-***********************/
 
 
 
