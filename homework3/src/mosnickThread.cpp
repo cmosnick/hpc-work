@@ -34,7 +34,7 @@ void mosnick::MosnickThread::doWorkBlock(unsigned int startingIndex, unsigned in
 
 // Row interleave method
 void mosnick::MosnickThread::doWorkInterleave(unsigned int startingIndex, const std::vector<std::pair<uint, std::vector<float> > > &lines){
-	if(startingIndex > _numResults){
+	if(startingIndex > _totalLines){
 		return;
 	}
 	unsigned int currentLine = startingIndex;
