@@ -4,14 +4,14 @@
 
 mosnick::MosnickThread::MosnickThread (unsigned int numResults, unsigned int step, unsigned int totalLines, const std::vector<float> *queryFloats) : 
 _numResults(numResults), _step(step), _totalLines(totalLines), _queryFloats(queryFloats){
-	std::cout << "Constructing MosnickThread with N = (" << numResults << ")" << std::endl; 
+	// std::cout << "Constructing MosnickThread with N = (" << numResults << ")" << std::endl; 
 	if(_numResults < 1){
 		std::cout << "numResults must be positive non-zero number" << std::endl;
 	}
 	if(_step < 1){
 		std::cout << "step must be 1 or greater" << std::endl;
 	}
-	std::cout << "Step size: " << _step << std::endl;
+	// std::cout << "Step size: " << _step << std::endl;
 
 }
 
@@ -44,7 +44,7 @@ void mosnick::MosnickThread::doWorkInterleave(unsigned int startingIndex, const 
 		currentLine += _step;
 	}
 
-	std::cout<< "Got full results" << std::endl;
+	// std::cout<< "Got full results" << std::endl;
 	// Sort to get top results (shortest distance)
 	std::vector<std::pair<uint, float> >::iterator middle = lineDistances.begin() + _numResults;
 	partial_sort(lineDistances.begin(), middle, lineDistances.end(), &MosnickThread::comp);

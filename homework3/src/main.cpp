@@ -54,16 +54,14 @@ int main(int argc, char const *argv[])
 	int numLines = read_in_file(infile, fnames, lines);
 	
 	end = std::chrono::system_clock::now();
-    std::chrono::duration<double> timeElapsed = end-start;
+    std::chrono::duration<double> timeElapsed1 = end-start;
 
 	if(numLines <= 0){
 		cout << "\n\nFile read was unsucessful."<< endl;
 		exit(0);
 	}
 
-	// print_filenames(fnames);
-	cout << "\n\nNumber of lines parsed: " << numLines << endl;
-	cout << "Time to process file: " << timeElapsed.count() << "s" << endl;
+	
 
 
 	/***************************
@@ -74,13 +72,15 @@ int main(int argc, char const *argv[])
 	bool success = process_query(fnames, lines, queryFilename, numResults, numProcesses);
 
     end = std::chrono::system_clock::now();
-    timeElapsed = end-start;
+    std::chrono::duration<double> timeElapsed2 = end-start;
 
     if(!success){
     	cout << "\n\nUnsucessful processing of query" << endl;
     	exit(0);
     }
-    cout << "\n\nTime to process query: " << timeElapsed.count() << "s" << endl;
+    cout << "\n\nNumber of lines parsed: " << numLines << endl;
+    cout << "Time to process file: " << timeElapsed1.count() << "s" << endl;
+    cout << "Time to process query: " << timeElapsed2.count() << "s" << endl;
 
 
 	return 0;

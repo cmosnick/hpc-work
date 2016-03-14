@@ -108,7 +108,7 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 
 		// Gather threads
 		tg.join_all();
-		cout<< "joined!" << endl;
+		// cout<< "joined!" << endl;
 
 		// Gather data in threads and get final solution
 		vector<pair<uint, float> > lineDistances;
