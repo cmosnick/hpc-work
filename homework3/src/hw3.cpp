@@ -65,7 +65,12 @@ bool is_float(const char* token){
 	return false;
 }
 
+// Will by default use row interleave
 bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses){
+	return process_query(fnames, lines, queryFilename, numResults, numProcesses, true);
+}
+
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses, bool isInterleaved){
 	if(!fnames.empty() && !lines.empty() && numResults > 0 && numProcesses > 0){
 		// Check that requested file to query is in csv file
 		if(fnames.count(queryFilename) == 0){

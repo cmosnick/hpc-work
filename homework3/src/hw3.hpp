@@ -20,6 +20,7 @@ using namespace std;
 int read_in_file(FILE *infile, map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines);
 bool is_float(const char* token);
 bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses);
+bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> > > &lines, string queryFilename, int numResults, int numProcesses, bool isInterleaved);
 string find_fname_by_linenum(map<string, uint> &fnames, uint lineNum);
 
 
