@@ -102,8 +102,8 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		// Create and call threads
 		for(int i = 0 ; i < numProcesses ; i++){
 			mosnick::MosnickThread *threadObj = (mosnick::MosnickThread *)mosnickThreads[i];
-			boost::thread *thread = new boost::thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i, lines));
-			tg.add_thread( thread );
+			tg.create_thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i, lines));
+			// tg.add_thread( thread );
 		}
 
 		// Gather threads
@@ -126,17 +126,17 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		
 		
 		// Match with filenames, print
-		vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
-		while(lDItr < lineDistances.end()){
-			cout << find_fname_by_linenum(fnames, lDItr->first);
-			cout << ":  " << lDItr->second << endl;
-			lDItr++;
-		}
+		// vector<pair<uint, float> >::iterator lDItr = lineDistances.begin();
+		// while(lDItr < lineDistances.end()){
+		// 	cout << find_fname_by_linenum(fnames, lDItr->first);
+		// 	cout << ":  " << lDItr->second << endl;
+		// 	lDItr++;
+		// }
 
 		// Free thread objects
-		// for(int i = 0 ; i < numProcesses ; i++){
-		// 	delete mosnickThreads[i];
-		// }
+		for(int i = 0 ; i < numProcesses ; i++){
+			delete mosnickThreads[i];
+		}
 
 		return true;
 	}

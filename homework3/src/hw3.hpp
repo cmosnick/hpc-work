@@ -4,7 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <sys/shm.h>
-#include <boost/thread.hpp>
+// #include <boost/thread.hpp>
 #include "MosnickThread.hpp"
 
 

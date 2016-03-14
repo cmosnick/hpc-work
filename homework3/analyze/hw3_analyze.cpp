@@ -1,10 +1,10 @@
 #include "../src/hw3.hpp"
 #include <stdio.h>
-#define ITR 100
+#define ITR 10
 
 
 void compareNumThreads(const char* fileName, uint numThreads, uint numResults);
-void compareFileSize(const char* fileNames[3], uint numThreads, uint numResults);
+void compareFileSize(const char* fileNames[3], uint numThreads, uint numResults, string queryFilenames[]);
 
 int main(int argc, char * argv[])
 {
@@ -14,22 +14,26 @@ int main(int argc, char * argv[])
 	// ---------------------------------------------
 	std::cout << "Running Timing Analysis" << std::endl
 		  << "-----------------------" << std::endl;
-	// const unsigned int PROCS = 12;
+	// const unsigned int PROCS = 8;
 	const unsigned int RESULTS = 100;
 	
+	char fname0[] = "../../2100_HPC.csv\0";
 	char fname1[] = "../../4200_HPC.csv\0";
 	char fname2[] = "../../6300_HPC.csv\0";
 	char fname3[] = "../../8400_HPC.csv\0";
 
-	char* fnames[] = { (char *)&fname1, (char*)&fname2, (char *)&fname3};
+	char* fnames[] = { (char *)&fname0, (char *)&fname1, (char*)&fname2, (char *)&fname3};
+	string queryFilenames[] = {"agricultural/agricultural00.tif", "agricultural/agricultural05_rot_000.tif", "agricultural/agricultural72_rot_180.tif", "agricultural/agricultural05_rot_000.tif"};
+	// int results[] = {1, 10, 100, 1000};
 
-	// Run tests for vary numebr of threads
-	// compareNumThreads("../../8400_HPC.csv", PROCS, RESULTS);
+	// Run tests for vary number of threads
+	compareNumThreads("../../2100_HPC.csv", 1, 1);
 
 	// Run test for varying file sizes
-	compareFileSize((const char **)fnames, 4, RESULTS);
-	// Run test for varying ???
-
+	compareFileSize((const char **)fnames, 1, RESULTS, queryFilenames);
+	
+	// Run test for varying results
+	// compareNumResults("../../2100_HPC.csv", 1, results);
 
 
 }
@@ -47,7 +51,7 @@ void compareNumThreads(const char* fileName, uint numThreads, uint numResults){
 
 	int numLines = read_in_file(infile, fnames, lines);
 	std::cout << numLines << std::endl;
-	string queryFilename("agricultural/agricultural00_rot_000.tif");
+	string queryFilename("agricultural/agricultural05_rot_000.tif");
 
 	for (int i = 1 ; i <= numThreads ; i++){
 		// Run Timing Experiment
@@ -73,11 +77,11 @@ void compareNumThreads(const char* fileName, uint numThreads, uint numResults){
 		  << "=========================" << std::endl;
 }
 
-void compareFileSize(const char* fileNames[3], uint numThreads, uint numResults){
+void compareFileSize(const char* fileNames[3], uint numThreads, uint numResults, string queryFilenames[]){
 	// ---------------------------------------------
 	// Read in file to test on
 	// ---------------------------------------------
-	for(int i = 0 ; i <3 ; i++){
+	for(int i = 0 ; i <4 ; i++){
 		map< string, uint > fnames;
 		vector< pair< uint, vector<float> > > lines;
 
@@ -85,7 +89,7 @@ void compareFileSize(const char* fileNames[3], uint numThreads, uint numResults)
 
 		int numLines = read_in_file(infile, fnames, lines);
 		std::cout << numLines << std::endl;
-		string queryFilename("agricultural/agricultural00_rot_000.tif");
+		string queryFilename = queryFilenames[i];
 			
 		// Run Timing Experiment
 	    std::chrono::high_resolution_clock c;
@@ -111,3 +115,4 @@ void compareFileSize(const char* fileNames[3], uint numThreads, uint numResults)
 	std::cout << "Timing Analysis Completed for varying file sizes" << std::endl
 		  << "=========================" << std::endl;
 }
+
