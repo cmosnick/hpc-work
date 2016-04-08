@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <boost/algorithm/string.hpp>
 #include "directory_scanner.hpp"
 #include "../homework3/src/hw3.hpp"
 
@@ -123,7 +124,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, FILE *search_vect
     fclose(search_vector_file);
 
     #if DEBUG_MESSAGES
-    std::cout << searchVector << std::endl;
+    // std::cout << searchVector << std::endl;
     #endif
 
     // iterate through filenames, send to threads
@@ -135,10 +136,29 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, FILE *search_vect
         // Compose message consisting of "<file path to parse>, <search vector>"
         char *msg = (char *) malloc( LINE_MESSAGE_SIZE * sizeof(char));
         std::string file_path(file->generic_string());
+        // std::cout << file_path << std::endl;
         size_t length = file_path.length();
         file_path.copy(msg, length);
-        strncpy(msg, ", ", 2);
-        strncpy((msg+length+1), searchVector, LINE_SIZE);
+        strncpy(msg+length, ", ", 2);
+        strncpy((msg+length+2), searchVector, LINE_SIZE);
+
+        MPI_Send(msg,           /* message buffer */
+            LINE_MESSAGE_SIZE,            /* buffer size */
+            MPI_CHAR,          /* data item is an integer */
+            rank,              /* destination process rank */
+            PROCESS,          /* user chosen message tag */
+            MPI_COMM_WORLD);   /* default communicator */
+    }
+
+    // TODO: Send all others in between, getting MPI_Recv's from threads
+
+
+
+    // Send each thread a terminate signal
+    for (int rank = 1; rank < threadCount && file!=file_list.end(); ++rank, ++file){
+        // Compose message consisting of "<file path to parse>, <search vector>"
+        char *msg = (char *) malloc( LINE_MESSAGE_SIZE * sizeof(char));
+        strncpy(msg, "\0", 1);
 
         MPI_Send(msg,           /* message buffer */
             LINE_MESSAGE_SIZE,            /* buffer size */
@@ -148,12 +168,8 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, FILE *search_vect
             MPI_COMM_WORLD);   /* default communicator */
     }
 
-
-
-
-
-
- }
+    return;
+}
 
 
 void cmoz::workerParseFile(){
@@ -181,8 +197,22 @@ void cmoz::workerParseFile(){
             return;
         }
 
+        // Convert message into string
+        std:string messageReceived(msg);
 
+        #if DEBUG_MESSAGES
+        // std::cout << messageReceived << std::endl;
+        #endif
 
+        // Parse message
+        std::vector<std::string> messages;
+        boost::split(messages, messageReceived, boost::is_any_of(", "));
+        #if DEBUG_MESSAGES         
+            std::cout << "found token count = " << messages.size() << std::endl << messages[0] << " , " << messages[1] << " , " << messages[2] << std::endl;
+
+        #endif 
+
+        // TODO: read in file name passed in, process against serach vector, and send list back
 
     }
     return;
