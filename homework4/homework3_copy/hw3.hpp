@@ -5,7 +5,7 @@
 #include <math.h>
 #include <sys/shm.h>
 // #include <boost/thread.hpp>
-#include "MosnickThread.hpp"
+#include "./mosnickThread.hpp"
 
 
 using namespace std;
