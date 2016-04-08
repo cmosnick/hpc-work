@@ -34,10 +34,7 @@ namespace scottgs {
 // ===== IMPLEMENTATIONS =======
 std::map<std::string, scottgs::path_list_type> scottgs::getFiles(boost::filesystem::path dir)
 {
-	// Define my map keys
-	const std::string regular_file("REGULAR");
-	const std::string directory_file("DIRECTORY");
-	const std::string other_file("OTHER");
+	
 	
 	// This is a return object
 	// REGULAR -> {file1r,file2r,...,fileNr}
@@ -64,7 +61,7 @@ std::map<std::string, scottgs::path_list_type> scottgs::getFiles(boost::filesyst
 		throw std::runtime_error(msg.str());
 	}
 
-	#ifdef GJS_DEBUG_PRINT				
+	#if GJS_DEBUG_PRINT				
 		std::cout << "Processing directory: " << dirPath.directory_string() << std::endl;
 	#endif	
 
@@ -81,21 +78,21 @@ std::map<std::string, scottgs::path_list_type> scottgs::getFiles(boost::filesyst
 			// if ( boost::filesystem::is_directory( dir_itr->status() ) )
 			// {
 			// 	// Note, for path the "/" operator is overloaded to append to the path
-			// 	directoryContents[directory_file].push_back(dir_itr->path());
+			// 	directoryContents[DIR_FILE].push_back(dir_itr->path());
 			// #ifdef GJS_DEBUG_PRINT				
 			// 				std::cout << dir_itr->path().filename() << " [directory]" << std::endl;
 			// #endif
 			// }
 			if ( boost::filesystem::is_regular_file( dir_itr->status() ) )
 			{
-				directoryContents[regular_file].push_back(dir_itr->path());
+				directoryContents[REG_FILE].push_back(dir_itr->path());
 			#ifdef GJS_DEBUG_PRINT				
 							std::cout << "Found regular file: " << dir_itr->path().filename() << std::endl;
 			#endif
 			}
 			// else
 			// {
-			// 	directoryContents[other_file].push_back(dir_itr->path());
+			// 	directoryContents[OTHER_FILE].push_back(dir_itr->path());
 			// #ifdef GJS_DEBUG_PRINT				
 			// 				std::cout << dir_itr->path().filename() << " [other]" << std::endl;
 			// #endif

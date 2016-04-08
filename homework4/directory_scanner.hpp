@@ -16,6 +16,11 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
+// Define my map keys
+#define REG_FILE   "REGULAR"
+#define DIR_FILE   "DIRECTORY"
+#define OTHER_FILE "OTHER"
+
 // +++++++++++++++++++++++++++++++++++++++++++++++++++
 
 namespace scottgs {
