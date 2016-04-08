@@ -270,9 +270,7 @@ void cmoz::workerParseFile(){
             // std::cout << "found token count = " << messages.size() << std::endl << messages[0] << " , " << messages[1] << " , " << messages[2] << std::endl;
         #endif 
 
-        // TODO: read in file name passed in, process against serach vector, and send list back
-
-        std::cout << "here first" << std::endl;
+        // TODO: read in file name passed in, process against search vector, and send list back
 
         MPI_Send( 0, 0, MPI_INT, 0, PROCESS, MPI_COMM_WORLD);
     }
