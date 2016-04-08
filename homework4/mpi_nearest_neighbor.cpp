@@ -1,7 +1,7 @@
 #include <mpi.h>
 #include <boost/algorithm/string.hpp>
 #include "directory_scanner.hpp"
-#include "../homework3/src/hw3.hpp"
+#include "./homework3/hw3.hpp"
 
 #define DEBUG_MESSAGES 1
 
