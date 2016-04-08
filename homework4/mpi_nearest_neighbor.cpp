@@ -36,11 +36,10 @@ int main(int argc, char *argv[]){
     // Master branch
     if(rank == 0){
         // Check args
-        if(argc < 5){
+        if(argc < 4){
             std::cout << "Please enter (1) a filename query\n \
             (2) a csv input file\n \
-            (3) the number of results to generate\n \
-            (4) sample search vector file"<< std::endl;
+            (3) the number of results to generate\n" << std::endl;
 
             MPI_Finalize();
             exit(0);
@@ -76,7 +75,7 @@ int main(int argc, char *argv[]){
         #endif
 
         // Read input vector
-        FILE *infile = fopen(argv[4], "r");
+        FILE *infile = fopen(argv[2], "r");
         if(!infile){
             std::cout << "File invalid" << std::endl;
             MPI_Finalize();
