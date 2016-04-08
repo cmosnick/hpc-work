@@ -33,7 +33,7 @@ void mosnick::MosnickThread::doWorkInterleave(unsigned int startingIndex, const 
 		return;
 	}
 	unsigned int currentLine = startingIndex;
-	std::vector<std::pair<uint, float>> lineDistances;
+	std::vector<std::pair<uint, float> > lineDistances;
 
 	while(currentLine < _totalLines){
 		float temp = compute_L1_norm(_queryFloats, &(lines[currentLine].second));

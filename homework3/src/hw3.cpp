@@ -99,23 +99,30 @@ bool process_query(map<string, uint> &fnames, vector< pair< uint, vector<float> 
 		boost::thread_group tg;
 
 
-		// Create and call threads
-		for(int i = 0 ; i < numProcesses ; i++){
-			mosnick::MosnickThread *threadObj = (mosnick::MosnickThread *)mosnickThreads[i];
-			tg.create_thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i, lines));
-			// tg.add_thread( thread );
-		}
-
-		// Gather threads
-		tg.join_all();
-		// cout<< "joined!" << endl;
-
-		// Gather data in threads and get final solution
 		vector<pair<uint, float> > lineDistances;
-		// Copy contents of each thread object's results into congragated result.
-		for(int i = 0 ; i < numProcesses ; i++){
-			for(int j = 0 ; j < numResults ; j++){
-				lineDistances.push_back(mosnickThreads[i]->results[j]);
+		if(numProcesses == 1 ){
+			mosnickThreads[0]->doWorkBlock(0, totalLines);
+			lineDistances = mosnickThreads[0]->results;
+		}
+		else{
+			// Create and call threads
+			for(int i = 0 ; i < numProcesses ; i++){
+				mosnick::MosnickThread *threadObj = (mosnick::MosnickThread *)mosnickThreads[i];
+				tg.create_thread(boost::bind(&mosnick::MosnickThread::doWorkInterleave, threadObj, i, lines));
+				// tg.add_thread( thread );
+			}
+
+			// Gather threads
+			tg.join_all();
+			// cout<< "joined!" << endl;
+
+			// Gather data in threads and get final solution
+			vector<pair<uint, float> > lineDistances;
+			// Copy contents of each thread object's results into congragated result.
+			for(int i = 0 ; i < numProcesses ; i++){
+				for(int j = 0 ; j < numResults ; j++){
+					lineDistances.push_back(mosnickThreads[i]->results[j]);
+				}
 			}
 		}
 

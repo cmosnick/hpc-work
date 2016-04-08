@@ -1,12 +1,13 @@
 #include <mpi.h>
 #include "directory_scanner.hpp"
+#include "../homework3/src/hw3.hpp"
 
 #define DEBUG_MESSAGES 1
 
-#define NUM_FLOATS 4097
-#define FNAME_SIZE 256
-#define FLOAT_CHARS 47
-#define LINE_SIZE (FNAME_SIZE + ( NUM_FLOATS * (FLOAT_CHARS + 3) ) )
+// #define NUM_FLOATS 4097
+// #define FNAME_SIZE 256
+// #define FLOAT_CHARS 47
+// #define LINE_SIZE (FNAME_SIZE + ( NUM_FLOATS * (FLOAT_CHARS + 3) ) )
 
 #define FILE_PATH_SIZE 1024
 #define LINE_MESSAGE_SIZE (LINE_SIZE + FILE_PATH_SIZE + 3)
@@ -174,7 +175,9 @@ void cmoz::workerParseFile(){
 
         // Check for teminate tag
         if(status.MPI_TAG == TERMINATE){
+            #if DEBUG_MESSAGES
             std::cout << rank << " received a terminate signal" << std::endl;
+            #endif
             return;
         }
 

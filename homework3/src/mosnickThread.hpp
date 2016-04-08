@@ -18,7 +18,7 @@ namespace mosnick{
 		static bool comp(const std::pair<uint, float> &el1, const std::pair<uint, float> &el2);
 		
 		// Results
-		std::vector<std::pair<uint, float>> results;
+		std::vector<std::pair<uint, float> > results;
 
 	private:
 		
