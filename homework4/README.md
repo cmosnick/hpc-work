@@ -11,6 +11,6 @@ To run:
     
     > make
 
-    > mpirun -n 4 mpi_nearest_neighbor filename ../data/ 5 sample_search_vector.csv
+    > mpirun -n 4 mpi_nearest_neighbor sample_search_vector.csv ../data/ 5 
 
-    >  
+    > mpirun -n <num threads> mpi_nearest_neighbor <search-vector-file> <data directory> <num results> 
