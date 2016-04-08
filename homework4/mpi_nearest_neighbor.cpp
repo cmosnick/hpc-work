@@ -5,13 +5,11 @@
 
 #define DEBUG_MESSAGES 1
 
-// #define NUM_FLOATS 4097
-// #define FNAME_SIZE 256
-// #define FLOAT_CHARS 47
-// #define LINE_SIZE (FNAME_SIZE + ( NUM_FLOATS * (FLOAT_CHARS + 3) ) )
-
 #define FILE_PATH_SIZE 1024
 #define LINE_MESSAGE_SIZE (LINE_SIZE + FILE_PATH_SIZE + 3)
+
+#define MAX_RESULTS 1000
+#define RESULT_MESSAGE_SIZE (FNAME_SIZE + FLOAT_CHARS + 3) * (MAX_RESULTS)
 
 
 enum MPI_TAGS {
@@ -148,24 +146,85 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, FILE *search_vect
             rank,              /* destination process rank */
             PROCESS,          /* user chosen message tag */
             MPI_COMM_WORLD);   /* default communicator */
+        free(msg);
     }
 
-    // TODO: Send all others in between, getting MPI_Recv's from threads
+    //Send all others in between, getting MPI_Recv's from threads
+    for( ; file!=file_list.end(); ++file){
+        // Receive results from a worker
+        char resultMsg[RESULT_MESSAGE_SIZE];
+        MPI_Status status;
 
+        // Receive a message from the worker
+        MPI_Recv(resultMsg,             /* message buffer */
+            0,   /* buffer size */
+            MPI_CHAR,       /* data item is an integer */
+            MPI_ANY_SOURCE,     /* Recieve from thread */
+            MPI_ANY_TAG,        /* tag */
+            MPI_COMM_WORLD,     /* default communicator */
+            &status
+        );
 
+        // Get return message
+        std::string returnLine(resultMsg);
+        #if DEBUG_MESSAGES
+        std::cout << returnLine << std::endl;
+        #endif      
 
-    // Send each thread a terminate signal
-    for (int rank = 1; rank < threadCount && file!=file_list.end(); ++rank, ++file){
+        // TODO: merge results with global results
+
+        // Send new task
+        const int sourceCaught = status.MPI_SOURCE;
+
         // Compose message consisting of "<file path to parse>, <search vector>"
         char *msg = (char *) malloc( LINE_MESSAGE_SIZE * sizeof(char));
-        strncpy(msg, "\0", 1);
+        std::string file_path(file->generic_string());
+        // std::cout << file_path << std::endl;
+        size_t length = file_path.length();
+        file_path.copy(msg, length);
+        strncpy(msg+length, ", ", 2);
+        strncpy((msg+length+2), searchVector, LINE_SIZE);
 
-        MPI_Send(msg,           /* message buffer */
-            LINE_MESSAGE_SIZE,            /* buffer size */
+        MPI_Send(msg,          /* message buffer */
+            LINE_MESSAGE_SIZE, /* buffer size */
             MPI_CHAR,          /* data item is an integer */
-            rank,              /* destination process rank */
-            TERMINATE,          /* user chosen message tag */
+            sourceCaught,      /* destination process rank */
+            PROCESS,           /* user chosen message tag */
             MPI_COMM_WORLD);   /* default communicator */
+        free(msg);
+    }
+
+
+    // Collect remaining results
+    for(int rank = 1 ; rank < threadCount ; rank ++){
+
+        // Receive results from a worker
+        char resultMsg[RESULT_MESSAGE_SIZE];
+        MPI_Status status;
+
+        // Receive a message from the worker
+        MPI_Recv(resultMsg,     /* message buffer */
+            0,/* buffer size */
+            MPI_CHAR,           /* data item is an integer */
+            rank,               /* Recieve from thread */
+            MPI_ANY_TAG,        /* tag */
+            MPI_COMM_WORLD,     /* default communicator */
+            &status
+        );
+
+        // Get return message
+        std::string returnLine(resultMsg);
+        #if DEBUG_MESSAGES
+        // std::cout << returnLine << std::endl;
+        #endif      
+
+        // TODO: merge results with global results
+
+    }
+
+    // Send each thread a terminate signal
+    for (int rank = 1; rank < threadCount; ++rank){
+        MPI_Send(0, 0, MPI_INT, rank, TERMINATE, MPI_COMM_WORLD);
     }
 
     return;
@@ -208,12 +267,14 @@ void cmoz::workerParseFile(){
         std::vector<std::string> messages;
         boost::split(messages, messageReceived, boost::is_any_of(", "));
         #if DEBUG_MESSAGES         
-            std::cout << "found token count = " << messages.size() << std::endl << messages[0] << " , " << messages[1] << " , " << messages[2] << std::endl;
-
+            // std::cout << "found token count = " << messages.size() << std::endl << messages[0] << " , " << messages[1] << " , " << messages[2] << std::endl;
         #endif 
 
         // TODO: read in file name passed in, process against serach vector, and send list back
 
+        std::cout << "here first" << std::endl;
+
+        MPI_Send( 0, 0, MPI_INT, 0, PROCESS, MPI_COMM_WORLD);
     }
     return;
 }
