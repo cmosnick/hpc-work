@@ -17,6 +17,11 @@ enum MPI_TAGS {
     PROCESS   = 1
 };
 
+typedef struct message{
+    char    name[FNAME_SIZE];
+    float   dist;
+} message_t;
+
 typedef std::map<std::string,scottgs::path_list_type> content_type;
 typedef content_type::const_iterator content_type_citr;
 
@@ -31,6 +36,19 @@ int main(int argc, char *argv[]){
     // Get rank (process number in MPI) to determine which process we're in
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Create mpi struct type for message passing
+    const int       numItems = 2;
+    int             blockLengths[2] = {FNAME_SIZE, 1};
+    MPI_Datatype    types[2] = {MPI_CHAR, MPI_FLOAT};
+    MPI_Datatype    mpi_message_type;
+    MPI_Aint        offsets[2];
+    
+    offsets[0] = offsetof(message_t, name);
+    offsets[1] = offsetof(message_t, dist);
+
+    MPI_Type_create_struct(numItems, blockLengths, offsets, types, &mpi_message_type);
+    MPI_Type_commit(&mpi_message_type);
 
 
     // Master branch
@@ -111,8 +129,8 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, FILE *search_vect
     #endif
 
     // Get line in search file
-    char *searchVector = (char*)malloc(sizeof(char) * LINE_SIZE);
-    size_t lineSize = LINE_SIZE;
+    char    *searchVector = (char*)malloc(sizeof(char) * LINE_SIZE);
+    size_t  lineSize = LINE_SIZE;
     getline(&searchVector, &lineSize, search_vector_file);
     if(searchVector == NULL){
         MPI_Finalize();
