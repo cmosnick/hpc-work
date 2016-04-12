@@ -96,3 +96,4 @@ data/6300_HPC.csv
 data/8400_HPC.csv
 
 !homework4/Makefile
+homework4/mpi_nearest_neighbor
