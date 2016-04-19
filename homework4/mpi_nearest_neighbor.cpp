@@ -26,10 +26,11 @@ typedef std::map<std::string,scottgs::path_list_type> content_type;
 typedef content_type::const_iterator content_type_citr;
 
 namespace cmoz{
-    void parseFiles(const scottgs::path_list_type file_list, MPI_Datatype &mpi_result_type);
+    void parseFiles(const scottgs::path_list_type file_list, int numResults);
     void printDirContents(const scottgs::path_list_type file_list);
-    void workerParseFile(FILE *search_vector_file, MPI_Datatype &mpi_result_type);
+    void workerParseFile(FILE *search_vector_file, int numResults);
     void getSearchVector(FILE *search_vector_file, std::vector<float> &floats);
+    void createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type);
 }
 
 int main(int argc, char *argv[]){
@@ -59,31 +60,6 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    // Create mpi struct type for passing results to master.  Based on numResults.
-    int             blockLengths[2] = {FNAME_SIZE, 1};  /*number of chars, number of floats*/
-    MPI_Datatype    types[2] = {MPI_CHAR, MPI_FLOAT};   /*types in struct*/
-    MPI_Datatype    cmoz_result_type;
-    MPI_Aint        offsets[2];
-    
-    offsets[0] = (MPI_Aint)offsetof(resultMessage_t, name);
-    offsets[1] = (MPI_Aint)offsetof(resultMessage_t, dist);
-
-    #if DEBUG_MESSAGES
-        std::cout << "offsets[0]: " << &offsets[0] << "\noffsets[1]: " << offsets[1] << std::endl;
-        std::cout << "num Results: " << numResults << std::endl;
-        std::cout << "address of datatype: " << &cmoz_result_type << std::endl;
-        std::cout << "address of other datatype: " << &types << std::endl;
-
-    #endif
-
-    MPI_Type_create_struct(
-        2,             /*Number of results, or elements*/
-        blockLengths,           /*Number of chars, number of floats*/
-        offsets,                /*Offset of name & distance in each element*/
-        types,                  /*Specify they are chars, and float*/
-        &cmoz_result_type       /*Object to put type in*/
-    );
-    MPI_Type_commit(&cmoz_result_type);
 
 
     // Master branch
@@ -108,7 +84,7 @@ int main(int argc, char *argv[]){
         #endif
 
         // Delegate parsing of files
-        cmoz::parseFiles(*fileList, cmoz_result_type);
+        cmoz::parseFiles(*fileList, numResults);
         MPI_Barrier(MPI_COMM_WORLD); // this is linked to the above barrier
     }
     // Worker branches
@@ -121,7 +97,7 @@ int main(int argc, char *argv[]){
             exit(0);
         }
 
-        cmoz::workerParseFile(vectorInfile, cmoz_result_type);
+        cmoz::workerParseFile(vectorInfile, numResults);
         MPI_Barrier(MPI_COMM_WORLD); // this is linked to the above barrier
     }
 
@@ -132,7 +108,7 @@ int main(int argc, char *argv[]){
 }
 
 // Called by master to delegate parsing of files
-void cmoz::parseFiles(const scottgs::path_list_type file_list, MPI_Datatype &cmoz_result_type){
+void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     // Called by master thread to delegate files to other threads
     int threadCount;
     MPI_Comm_size(MPI_COMM_WORLD, &threadCount);
@@ -141,15 +117,16 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, MPI_Datatype &cmo
     std::cout << "Number of threads: " << threadCount << std::endl;
     #endif
 
-    #if DEBUG_MESSAGES
-    // std::cout << searchVector << std::endl;
-    #endif
+    // Create MPI types in this particular thread.  Each thread must do it
+    MPI_Datatype cmoz_result_type;
+    MPI_Datatype cmoz_multipleResults_type;
+    createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type);
 
     // iterate through filenames, send to threads
     scottgs::path_list_type::const_iterator file = file_list.begin();
 
     // Send first time to each thread
-    // Send each file to a thread
+    // Send a file to each thread
     for (int rank = 1; rank < threadCount && file!=file_list.end(); ++rank, ++file){
         // Compose message consisting of "<file path to parse>"
         char *msg = (char *) malloc( FILE_PATH_SIZE * sizeof(char));
@@ -171,23 +148,26 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, MPI_Datatype &cmo
     //Send all others in between, getting MPI_Recv's from threads
     for( ; file!=file_list.end(); ++file){
         // Receive results from a worker
-        char resultMsg[RESULT_MESSAGE_SIZE];
+        resultMessage_t results[numResults];
         MPI_Status status;
 
         // Receive a message from the worker
-        MPI_Recv(resultMsg,     /* message buffer */
+        MPI_Recv(&results,       /* message buffer */
             1,                  /* buffer size */
-            cmoz_result_type,   /* data item is an integer */
+            cmoz_multipleResults_type,   /* data item is an array of results */
             MPI_ANY_SOURCE,     /* Recieve from thread */
             MPI_ANY_TAG,        /* tag */
             MPI_COMM_WORLD,     /* default communicator */
             &status
         );
 
-        // Get return message
-        std::string returnLine(resultMsg);
         #if DEBUG_MESSAGES
-        std::cout << returnLine << std::endl;
+        // Print return values
+        std::cout << "\n\n";
+        for(int i = 0 ; i < numResults ; i++){
+            std::string name(results[i].name);
+            std::cout << name << ": " << results[i].dist << std::endl;
+        }
         #endif     
 
         // TODO: merge results with global results
@@ -217,27 +197,29 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, MPI_Datatype &cmo
     for(int rank = 1 ; rank < threadCount ; rank ++){
 
         // Receive results from a worker
-        char resultMsg[RESULT_MESSAGE_SIZE];
+        resultMessage_t results[numResults];
         MPI_Status status;
 
         // Receive a message from the worker
-        MPI_Recv(resultMsg,     /* message buffer */
-            0,/* buffer size */
-            MPI_CHAR,           /* data item is an integer */
-            rank,               /* Recieve from thread */
+        MPI_Recv(&results,      /* message buffer */
+            1,                  /* buffer size */
+            cmoz_multipleResults_type,   /* data item is an array of results */
+            MPI_ANY_SOURCE,     /* Recieve from thread */
             MPI_ANY_TAG,        /* tag */
             MPI_COMM_WORLD,     /* default communicator */
             &status
         );
 
-        // Get return message
-        std::string returnLine(resultMsg);
         #if DEBUG_MESSAGES
-        // std::cout << returnLine << std::endl;
-        #endif      
+        // Print return values
+        std::cout << "\n\n";
+        for(int i = 0 ; i < numResults ; i++){
+            std::string name(results[i].name);
+            std::cout << name << ": " << results[i].dist << std::endl;
+        }
+        #endif     
 
         // TODO: merge results with global results
-
     }
 
     // Send each thread a terminate signal
@@ -248,9 +230,14 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, MPI_Datatype &cmo
     return;
 }
 
-void cmoz::workerParseFile(FILE *search_vector_file, MPI_Datatype &cmoz_result_type){
+void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Create MPI types in this particular thread.  Each thread must do it
+    MPI_Datatype cmoz_result_type;
+    MPI_Datatype cmoz_multipleResults_type;
+    createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type);
 
     // Get line in search file
     std::vector<float> floats(NUM_FLOATS);
@@ -273,7 +260,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, MPI_Datatype &cmoz_result_t
         // Check for teminate tag
         if(status.MPI_TAG == TERMINATE){
             #if DEBUG_MESSAGES
-            std::cout << rank << " received a terminate signal" << std::endl;
+            std::cout << "Thread" << rank << " received a terminate signal" << std::endl;
             #endif
             return;
         }
@@ -283,18 +270,27 @@ void cmoz::workerParseFile(FILE *search_vector_file, MPI_Datatype &cmoz_result_t
 
         #if DEBUG_MESSAGES
         std::cout << messageReceived << std::endl;
+        // std::cout << "here" << std::endl;
         #endif
-
-        // Parse message
-        #if DEBUG_MESSAGES         
-            // std::cout << "found token count = " << messages.size() << std::endl << messages[0] << " , " << messages[1] << " , " << messages[2] << std::endl;
-        #endif 
 
         // TODO: read in / check file name passed in, process against search vector, and send list back
 
 
-        // Send back vector <<filename>, <dist>> of size results
-        MPI_Send( 0, 0, MPI_INT, 0, PROCESS, MPI_COMM_WORLD);
+        // Send back array <<filename>, <dist>> of size results
+        resultMessage_t results[numResults];
+        for(int i=0 ; i < numResults ; i ++){
+            std::string name("test\0");
+            name.copy(&(results[i].name[0]), 5);
+            results[i].dist = .5;
+        }
+        MPI_Send( 
+            &results,                   /*Send buffer object, array of cmoz_result_types*/
+            1,                          /*Number of objects in bufer*/
+            cmoz_multipleResults_type,  /*Type of object in buffer*/
+            0,                          /*Destination: master*/
+            PROCESS,                    /*Message tag*/
+            MPI_COMM_WORLD              /*Communictaion channel*/
+        );
     }
     return;
 }
@@ -361,7 +357,44 @@ void cmoz::getSearchVector(FILE *search_vector_file, std::vector<float> &floats)
     free(line);
 }
 
+void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type){
+    // Create mpi struct type for one result.
+    int             numElements = 2;
+    int             blockLengths[2] = {FNAME_SIZE, 1};  /*number of chars, number of floats*/
+    MPI_Datatype    types[2] = {MPI_CHAR, MPI_FLOAT};   /*types in struct*/
+    // MPI_Datatype    cmoz_result_type;
+    MPI_Aint        offsets[2];
+    offsets[0] = (MPI_Aint)offsetof(resultMessage_t, name);
+    offsets[1] = (MPI_Aint)offsetof(resultMessage_t, dist);
+    
+    MPI_Type_create_struct(
+        numElements,            /*Number of results, or elements*/
+        blockLengths,           /*Number of chars, number of floats*/
+        offsets,                /*Offset of name & distance in each element*/
+        types,                  /*Specify they are chars, and float*/
+        cmoz_result_type       /*Object to put type in*/
+    );
+    MPI_Type_commit(cmoz_result_type);
 
+
+
+    // Create mpi struct of cmoz_result_type
+                    numElements = 1;
+    int             blockLength[1] = {numResults};
+    MPI_Datatype    type[1] = {*cmoz_result_type};
+    MPI_Aint        offset[1];
+    offset[0] = 0;
+    // MPI_Datatype    cmoz_multipleResults_type;
+
+    MPI_Type_create_struct(
+        numElements,            /*Number of results, or elements*/
+        blockLength,           /*Number of chars, number of floats*/
+        offset,                /*Offset of name & distance in each element*/
+        type,                  /*Specify they are chars, and float*/
+        cmoz_multipleResults_type       /*Object to put type in*/
+    );
+    MPI_Type_commit(cmoz_multipleResults_type);
+}
 
 
 
