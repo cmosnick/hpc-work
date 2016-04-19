@@ -31,6 +31,11 @@ namespace cmoz{
     void workerParseFile(FILE *search_vector_file, int numResults);
     void getSearchVector(FILE *search_vector_file, std::vector<float> &floats);
     void createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type);
+    void getResults(int numResults, std::string filename, std::vector<float> &searchVector, std::vector< std::pair<std::string, float> > &results);
+    int  readFile(std::string filename, std::vector<std::pair<std::string, std::vector<float> > > &lines);
+    float computeL1Norm(const std::vector<float> *v1, const std::vector<float> *v2);
+    void printLines(std::vector<std::pair<std::string, std::vector<float> > > &lines);
+    bool comp(const std::pair<std::string, float> &el1, const std::pair<std::string, float> &el2);
 }
 
 int main(int argc, char *argv[]){
@@ -134,7 +139,10 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         // std::cout << file_path << std::endl;
         size_t length = file_path.length();
         file_path.copy(msg, length);
-        msg[length+1] = '\0';
+        msg[length] = '\0';
+        #if DEBUG_MESSAGES
+        std::cout << "filename: " << msg << "\nlast letter: " << msg[length] << std::endl;
+        #endif
 
         MPI_Send(msg,               /* message buffer */
             FILE_PATH_SIZE,         /* buffer size */
@@ -152,7 +160,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         MPI_Status status;
 
         // Receive a message from the worker
-        MPI_Recv(&results,       /* message buffer */
+        MPI_Recv(results,       /* message buffer */
             1,                  /* buffer size */
             cmoz_multipleResults_type,   /* data item is an array of results */
             MPI_ANY_SOURCE,     /* Recieve from thread */
@@ -181,8 +189,10 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         // std::cout << file_path << std::endl;
         size_t length = file_path.length();
         file_path.copy(msg, length);
-        msg[length+1] = '\0';
-
+        msg[length] = '\0';
+        #if DEBUG_MESSAGES
+        std::cout << "filename: " << msg << "\nlast letter: " << msg[length] << std::endl;
+        #endif
         MPI_Send(msg,               /* message buffer */
             FILE_PATH_SIZE,         /* buffer size */
             MPI_CHAR,               /* data item is an integer */
@@ -192,16 +202,14 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         free(msg);
     }
 
-
     // Collect remaining results
     for(int rank = 1 ; rank < threadCount ; rank ++){
-
         // Receive results from a worker
         resultMessage_t results[numResults];
         MPI_Status status;
 
         // Receive a message from the worker
-        MPI_Recv(&results,      /* message buffer */
+        MPI_Recv(results,      /* message buffer */
             1,                  /* buffer size */
             cmoz_multipleResults_type,   /* data item is an array of results */
             MPI_ANY_SOURCE,     /* Recieve from thread */
@@ -240,10 +248,10 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
     createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type);
 
     // Get line in search file
-    std::vector<float> floats(NUM_FLOATS);
-    getSearchVector(search_vector_file, floats);
+    std::vector<float> searchVector(NUM_FLOATS);
+    getSearchVector(search_vector_file, searchVector);
 
-    char msg[LINE_MESSAGE_SIZE];
+    char msg[FILE_PATH_SIZE];
     MPI_Status status;
 
     // Start recieving files to parse
@@ -256,7 +264,6 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
             MPI_COMM_WORLD,     /* default communicator */
             &status
         );
-
         // Check for teminate tag
         if(status.MPI_TAG == TERMINATE){
             #if DEBUG_MESSAGES
@@ -265,26 +272,34 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
             return;
         }
 
-        // Convert message into string
+        // Convert message into string, filename
         std::string messageReceived(msg);
-
         #if DEBUG_MESSAGES
         std::cout << messageReceived << std::endl;
-        // std::cout << "here" << std::endl;
         #endif
 
+
+
+
+
+
         // TODO: read in / check file name passed in, process against search vector, and send list back
+        std::vector< std::pair < std::string, float> > results;
+        getResults(numResults, messageReceived, searchVector, results);
+
+
+
 
 
         // Send back array <<filename>, <dist>> of size results
-        resultMessage_t results[numResults];
+        resultMessage_t sendResults[numResults];
         for(int i=0 ; i < numResults ; i ++){
-            std::string name("test\0");
-            name.copy(&(results[i].name[0]), 5);
-            results[i].dist = .5;
+            results[i].first.copy(&(sendResults[i].name[0]), results[i].first.length()+1);
+            sendResults[i].dist = results[i].second;
+            std::cout << sendResults[i].name[0] << ": " << sendResults[i].dist << std::endl;
         }
         MPI_Send( 
-            &results,                   /*Send buffer object, array of cmoz_result_types*/
+            &sendResults,               /*Send buffer object, array of cmoz_result_types*/
             1,                          /*Number of objects in bufer*/
             cmoz_multipleResults_type,  /*Type of object in buffer*/
             0,                          /*Destination: master*/
@@ -395,6 +410,119 @@ void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Da
     );
     MPI_Type_commit(cmoz_multipleResults_type);
 }
+
+void cmoz::getResults(int numResults, std::string filename, std::vector<float> &searchVector, std::vector<std::pair <std::string, float> > &results){
+    results.clear();
+    if(numResults < 1){
+        return;
+    }
+
+    #if DEBUG_MESSAGES
+    // std::cout << "Length of filename: " << filename.length() << "\nfilename[length]: " << filename[filename.length()] << std::endl;
+    #endif
+    filename[filename.length()] = '\0';
+    std::vector<std::pair<std::string, std::vector<float> > > lines;
+    // Parse file
+    readFile(filename, lines);
+    // printLines(lines);
+
+    // Get distances from lines, add to result vector
+    std::vector<std::pair<std::string, std::vector<float> > >::iterator itr = lines.begin();
+
+    for( ; itr != lines.end() ; itr++){
+        float temp = computeL1Norm(&(itr->second), &searchVector);
+        results.push_back(std::pair<std::string, float> (itr->first, temp));
+        // std::cout << itr->first << ": " << temp << std::endl;
+    }
+
+    // partial sort and cut results
+    std::vector<std::pair<std::string, float> >::iterator middle = results.begin() + numResults;
+    partial_sort(results.begin(), middle, results.end(), &cmoz::comp);
+    results.resize(numResults);
+
+    return;
+}
+
+int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std::vector<float> > > &lines){
+    FILE *infile = fopen(filename.c_str(), "r");
+    if(!infile){
+        std::cout << "File "<< filename.c_str() <<" invalid." << std::endl;
+        std::cout << "File "<< filename <<" invalid." << std::endl;
+        MPI_Finalize();
+        exit(0);
+    }
+
+    char *line = (char*)malloc(sizeof(char) * LINE_SIZE);
+    char *token = NULL;
+
+    // Get line
+    size_t lineSize = LINE_SIZE;
+    int numLines = 0;
+    while(getline(&line, &lineSize, infile)){
+        // Get first token, the filename
+        token = strtok(line, DELIMS);
+        if(token){
+            // Put token into string
+            std::string fname (token);
+
+            // read in floats
+            vector<float> floats(NUM_FLOATS);
+            uint i = 0;
+            do{
+                token = strtok(NULL, DELIMS);
+                if(token && is_float(token)){
+                    float temp = atof(token);
+                    floats[i]=temp;
+                }
+                else 
+                    break;
+                i++;
+            }while( i <= NUM_FLOATS);
+
+            // Add fname and vector to pair
+            std::pair <std::string, vector<float> > temp(fname, floats);
+            lines.push_back(temp);
+        }
+        else{
+            break;
+        }
+        numLines ++;
+    }
+    free(line);
+
+    return numLines;
+}
+
+float cmoz::computeL1Norm(const std::vector<float> *v1, const std::vector<float> *v2){
+    if(v1 && v2){
+        int s1 = (*v1).size(),
+            s2 = (*v2).size(),
+            i=0;
+        // Take smallest size
+        int size = (s1 < s2) ? s1:s2;
+        if(size != 4097){
+            std::cout << "\nSize = " << size << std::endl;
+        }
+        float sum = 0;
+        for( ; i < size ; i++){
+            sum += fabs( ((*v1)[i] - (*v2)[i]) );
+        }
+        return (float)sum/size;
+    }
+    return -1;
+}
+
+void cmoz::printLines(std::vector<std::pair<std::string, std::vector<float> > > &lines){
+    std::vector<std::pair<std::string, std::vector<float> > >::iterator itr = lines.begin();
+    for( ; itr != lines.end() ; itr++){
+        std::cout << itr->first << ": " << itr->second[0] << std::endl;   
+    }
+}
+
+bool cmoz::comp(const std::pair<std::string, float> &el1, const std::pair<std::string, float> &el2){
+    return (el1.second < el2.second);
+}
+
 
 
 
