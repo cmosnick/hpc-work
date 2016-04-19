@@ -1,4 +1,4 @@
-#include "MosnickThread.hpp"
+#include "mosnickThread.hpp"
 #include <iostream>
 
 
