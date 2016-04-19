@@ -5,6 +5,8 @@
 
 #define DEBUG_MESSAGES 1
 #define DEBUG_MESSAGES_2 0
+#define DEBUG_MESSAGES_3 0
+#define PRINT_FINAL_RESULTS 1
 
 #define FILE_PATH_SIZE 1024
 #define LINE_MESSAGE_SIZE (LINE_SIZE + FILE_PATH_SIZE + 3)
@@ -36,6 +38,7 @@ namespace cmoz{
     int  readFile(std::string filename, std::vector<std::pair<std::string, std::vector<float> > > &lines);
     float computeL1Norm(const std::vector<float> *v1, const std::vector<float> *v2);
     void printLines(std::vector<std::pair<std::string, std::vector<float> > > &lines);
+    void printResults(std::vector<std::pair <std::string, float> > &results);
     void sortAndCut(int numResults, std::vector<std::pair <std::string, float> > &results);
     bool comp(const std::pair<std::string, float> &el1, const std::pair<std::string, float> &el2);
 }
@@ -84,7 +87,7 @@ int main(int argc, char *argv[]){
             MPI_Finalize();
             exit(0);
         }
-        #if DEBUG_MESSAGES
+        #if DEBUG_MESSAGES_2
         std::cout << "Sucessful reading directory" << std::endl;
         // cmoz::printDirContents(directoryContents);
         cmoz::printDirContents(*fileList);
@@ -128,6 +131,10 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     MPI_Datatype cmoz_result_type;
     MPI_Datatype cmoz_multipleResults_type;
     createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type);
+    
+    // Create glocal results object
+    std::vector<std::pair <std::string, float> > globalResults;
+
 
     // iterate through filenames, send to threads
     scottgs::path_list_type::const_iterator file = file_list.begin();
@@ -142,9 +149,6 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         size_t length = file_path.length();
         file_path.copy(msg, length);
         msg[length] = '\0';
-        // #if DEBUG_MESSAGES_2
-        // std::cout << "filename: " << msg << "\nlast letter: " << msg[length] << std::endl;
-        // #endif
 
         MPI_Send(msg,               /* message buffer */
             FILE_PATH_SIZE,         /* buffer size */
@@ -171,16 +175,21 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
             &status
         );
 
+        // Merge results with global results
         #if DEBUG_MESSAGES
-        // Print return values
         std::cout << "\n\n";
+        #endif
         for(int i = 0 ; i < numResults ; i++){
             std::string name(results[i].name);
-            std::cout << name << ": " << results[i].dist << std::endl;
+            float temp = results[i].dist;
+            #if DEBUG_MESSAGES
+            std::cout << name << ": " << temp << std::endl;
+            #endif
+            globalResults.push_back(std::pair<std::string, float> (name, temp));
         }
-        #endif     
 
-        // TODO: merge results with global results
+        sortAndCut(numResults, globalResults);
+
 
         // Send new task
         const int sourceCaught = status.MPI_SOURCE;
@@ -192,9 +201,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         size_t length = file_path.length();
         file_path.copy(msg, length);
         msg[length] = '\0';
-        // #if DEBUG_MESSAGES_2
-        // std::cout << "filename: " << msg << "\nlast letter: " << msg[length] << std::endl;
-        // #endif
+
         MPI_Send(msg,               /* message buffer */
             FILE_PATH_SIZE,         /* buffer size */
             MPI_CHAR,               /* data item is an integer */
@@ -220,16 +227,20 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
             &status
         );
 
+        // Merge results with global results
         #if DEBUG_MESSAGES
-        // Print return values
         std::cout << "\n\n";
+        #endif
         for(int i = 0 ; i < numResults ; i++){
             std::string name(results[i].name);
-            std::cout << name << ": " << results[i].dist << std::endl;
+            float temp = results[i].dist;
+            #if DEBUG_MESSAGES
+            std::cout << name << ": " << temp << std::endl;
+            #endif
+            globalResults.push_back(std::pair<std::string, float> (name, temp));
         }
-        #endif     
 
-        // TODO: merge results with global results
+        sortAndCut(numResults, globalResults);
     }
 
     // Send each thread a terminate signal
@@ -237,6 +248,11 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         MPI_Send(0, 0, MPI_INT, rank, TERMINATE, MPI_COMM_WORLD);
     }
 
+
+    // Print final results:
+    #if PRINT_FINAL_RESULTS
+    printResults(globalResults);
+    #endif
     return;
 }
 
@@ -268,7 +284,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
         );
         // Check for teminate tag
         if(status.MPI_TAG == TERMINATE){
-            #if DEBUG_MESSAGES
+            #if DEBUG_MESSAGES_2
             std::cout << "Thread" << rank << " received a terminate signal" << std::endl;
             #endif
             return;
@@ -276,7 +292,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
 
         // Convert message into string, filename
         std::string messageReceived(msg);
-        #if DEBUG_MESSAGES_2
+        #if DEBUG_MESSAGES
         std::cout << messageReceived << std::endl;
         #endif
 
@@ -419,15 +435,12 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
         return;
     }
 
-    #if DEBUG_MESSAGES_2
-    // std::cout << "Length of filename: " << filename.length() << "\nfilename[length]: " << filename[filename.length()] << std::endl;
-    #endif
     filename[filename.length()] = '\0';
     std::vector<std::pair<std::string, std::vector<float> > > lines;
     
     // Parse file
     readFile(filename, lines);
-    #if DEBUG_MESSAGES_2
+    #if DEBUG_MESSAGES_3
     printLines(lines);
     #endif
 
@@ -437,9 +450,6 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     for( ; itr != lines.end() ; itr++){
         float temp = computeL1Norm(&(itr->second), &searchVector);
         results.push_back(std::pair<std::string, float> (itr->first, temp));
-        #if DEBUG_MESSAGES_2
-        std::cout << itr->first << ": " << temp << std::endl;
-        #endif
     }
 
     // partial sort and cut results
@@ -521,6 +531,14 @@ void cmoz::printLines(std::vector<std::pair<std::string, std::vector<float> > > 
     std::vector<std::pair<std::string, std::vector<float> > >::iterator itr = lines.begin();
     for( ; itr != lines.end() ; itr++){
         std::cout << itr->first << ": " << itr->second[0] << std::endl;   
+    }
+}
+
+void cmoz::printResults(std::vector<std::pair <std::string, float> > &results){
+    std::vector<std::pair<std::string, float> >::iterator itr = results.begin();
+    std::cout << "\n\nFINAL RESULTS\n\n_____________" << std::endl;
+    for( ; itr != results.end() ; itr++){
+        std::cout << itr->first << ": " << itr->second << std::endl;
     }
 }
 
