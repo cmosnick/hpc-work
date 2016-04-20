@@ -310,6 +310,9 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
         std::vector< std::pair < std::string, float> > results;
         getResults(numResults, messageReceived, searchVector, results);
 
+        #if DEBUG_MESSAGES
+        std::cout << "Got results for " << messageReceived << std::endl;
+        #endif
 
 
 
