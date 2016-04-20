@@ -258,7 +258,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     }
 
     // Collect remaining results
-    for(int rank = 1 ; rank < threadCount ; rank ++){
+    for(int rank = 1 ; rank < ((threadCount > numFiles)? numFiles : threadCount) ; rank ++){
         // Receive results from a worker
         resultMessage_t results[numResults];
         statsMessage_t  stats;
