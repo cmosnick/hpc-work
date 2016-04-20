@@ -77,8 +77,6 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-
-
     // Master branch
     if(rank == 0){
 
@@ -300,7 +298,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
         // Convert message into string, filename
         std::string messageReceived(msg);
         #if DEBUG_MESSAGES
-        std::cout << messageReceived << std::endl;
+        std::cout <<"Processing " << messageReceived << "..." << std::endl;
         #endif
 
 
