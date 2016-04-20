@@ -13,10 +13,10 @@ To run:
 
     > mpirun -n 4 mpi_nearest_neighbor sample_search_vector.csv ../data/ 5 
 
-    > mpirun -n <num threads> mpi_nearest_neighbor <search-vector-file> <data directory> <num results> 
+    > mpirun -n <num threads> mpi_nearest_neighbor <search-vector-file> <data directory> <num results> <output_directory.csv -optional>
 
 To run tests:
 
-*  make:
-    > make run_tests NUMRUNS=<number of runs>
+*  using make:
+    > make run_tests NUMRUNS="<number of runs>""
 
