@@ -46,7 +46,7 @@ typedef std::map<std::string,scottgs::path_list_type> content_type;
 typedef content_type::const_iterator content_type_citr;
 
 namespace cmoz{
-    void parseFiles(const scottgs::path_list_type file_list, int numResults);
+    void parseFiles(const scottgs::path_list_type file_list, int numResults, FILE *outfile);
     void printDirContents(const scottgs::path_list_type file_list);
     void workerParseFile(FILE *search_vector_file, int numResults);
     void getSearchVector(FILE *search_vector_file, std::vector<float> &floats);
@@ -109,8 +109,18 @@ int main(int argc, char *argv[]){
         cmoz::printDirContents(*fileList);
         #endif
 
+        // Write stats to file
+        FILE *outfile;
+        if(argc >= 4){
+            outfile = fopen(argv[4], "a");
+        }
+        else{
+            outfile = fopen("default.csv", "a");
+            std::cout
+        }
+
         // Delegate parsing of files
-        cmoz::parseFiles(*fileList, numResults);
+        cmoz::parseFiles(*fileList, numResults, outfile);
         MPI_Barrier(MPI_COMM_WORLD); // this is linked to the above barrier
     }
     // Worker branches
@@ -134,7 +144,7 @@ int main(int argc, char *argv[]){
 }
 
 // Called by master to delegate parsing of files
-void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
+void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults, FILE *outfile){
     // Called by master thread to delegate files to other threads
     int threadCount;
     MPI_Comm_size(MPI_COMM_WORLD, &threadCount);
@@ -337,6 +347,18 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     std::cout << "Per vector wall clock time: " << (totalWallClockTime/totalNumVectors) << std::endl;
     std::cout << "Paralellization speedup:    " << ((vectorProcTimes+fileLoadTimes)/totalWallClockTime) << std::endl;
     #endif
+
+
+    if(outfile){
+        fprintf(outfile, "%d, %f, %f, %f, %f, %f\n", threadCount, totalWallClockTime, (fileLoadTimes/numFiles), (vectorProcTimes/totalNumVectors), (totalWallClockTime/totalNumVectors), ((vectorProcTimes+fileLoadTimes)/totalWallClockTime));
+        fclose(outfile);
+    }
+    else{
+        #if DEBUG_MESSAGES
+        std::cout << "Outfile not open!" << std::endl;
+        #endif
+    }
+
     return;
 }
 
