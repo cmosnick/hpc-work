@@ -23,7 +23,7 @@ clean:
 run_tests: all run_even_split run_waterfall
 
 run_even_split:
-	for (( i = 0; i < $(TESTARGS); ++i ));  do \
+	for (( i = 0; i < $(NUMRUNS); ++i ));  do \
 		mpirun --hostfile  hostfiles/8_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/even.csv && \
 		mpirun --hostfile hostfiles/16_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/even.csv && \
 		mpirun --hostfile hostfiles/24_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/even.csv && \
@@ -33,11 +33,12 @@ run_even_split:
 	done;
 
 run_waterfall:
-	mpirun --hostfile  hostfiles/8_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
-	mpirun --hostfile hostfiles/16_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
-	mpirun --hostfile hostfiles/24_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
-	mpirun --hostfile hostfiles/32_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
-	mpirun --hostfile hostfiles/40_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
-	mpirun --hostfile hostfiles/48_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv
-
+	for (( i = 0; i < $(NUMRUNS); ++i ));  do \
+		mpirun --hostfile  hostfiles/8_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+		mpirun --hostfile hostfiles/16_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+		mpirun --hostfile hostfiles/24_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+		mpirun --hostfile hostfiles/32_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+		mpirun --hostfile hostfiles/40_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+		mpirun --hostfile hostfiles/48_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv;\
+	done;
 
