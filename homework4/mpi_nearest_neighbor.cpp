@@ -308,13 +308,15 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
 
         // read in / check file name passed in, process against search vector, and send list back
         std::vector< std::pair < std::string, float> > results;
-        #if DEBUG_MESSAGES
+        #if DEBUG_MESSAGES_2
+
+
         std::cout << "About to get results from " << messageReceived << std::endl;
         #endif
 
         getResults(numResults, messageReceived, searchVector, results);
 
-        #if DEBUG_MESSAGES
+        #if DEBUG_MESSAGES_2
         std::cout << "Got results for " << messageReceived << std::endl;
         #endif
 
@@ -455,13 +457,13 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     std::vector<std::pair<std::string, std::vector<float> > > lines;
     
     // Parse file
-    #if DEBUG_MESSAGES
+    #if DEBUG_MESSAGES_2
     std::cout << "About to read file " << filename << std::endl;
     #endif
 
     readFile(filename, lines);
 
-    #if DEBUG_MESSAGES
+    #if DEBUG_MESSAGES_2
     std::cout << "Read in file " << filename << std::endl;
     #endif
     #if DEBUG_MESSAGES_3
@@ -476,14 +478,14 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
         results.push_back(std::pair<std::string, float> (itr->first, temp));
     }
 
-    #if DEBUG_MESSAGES
+    #if DEBUG_MESSAGES_2
     std::cout << "Got distances for " << filename << std::endl;
     #endif
     
     // partial sort and cut results
     sortAndCut(numResults, results);
 
-    #if DEBUG_MESSAGES
+    #if DEBUG_MESSAGES_2
     std::cout << "Sorted and cut results from " << filename << std::endl;
     #endif
 
@@ -511,7 +513,7 @@ int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std:
         if(token){
             // Put token into string
             std::string fname (token);
-            #if DEBUG_MESSAGES
+            #if DEBUG_MESSAGES_2
             std::cout << fname << std::endl;
             #endif
 
