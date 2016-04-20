@@ -539,6 +539,7 @@ int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std:
         numLines ++;
     }
     free(line);
+    fclose(infile);
 
     return numLines;
 }
