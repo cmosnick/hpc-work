@@ -44,3 +44,7 @@ run_waterfall:
 	done;
 	python plot_columns.py outputFiles/waterfall.csv outputFiles/waterfall_avg
 
+create_charts:
+	python plot_columns.py outputFiles/even.csv outputfiles/even_split_avg &&\
+	python plot_columns.py outputFiles/waterfall.csv outputFiles/waterfall_avg
+
