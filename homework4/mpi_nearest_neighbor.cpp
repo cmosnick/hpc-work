@@ -2,6 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <math.h>
 #include "directory_scanner.hpp"
+#include "Timing.hpp"
 
 #define NUM_FLOATS 4097
 #define FNAME_SIZE 256
@@ -10,9 +11,10 @@
 #define DELIMS ","
 
 #define DEBUG_MESSAGES 1
-#define DEBUG_MESSAGES_2 0
+#define DEBUG_MESSAGES_2 1
 #define DEBUG_MESSAGES_3 0
 #define PRINT_FINAL_RESULTS 1
+#define REPORT_STATS_ON 1
 
 #define FILE_PATH_SIZE 1024
 #define LINE_MESSAGE_SIZE (LINE_SIZE + FILE_PATH_SIZE + 3)
@@ -23,13 +25,22 @@
 
 enum MPI_TAGS {
     TERMINATE = 0, 
-    PROCESS   = 1
+    PROCESS   = 1,
+    RESULTS   = 2,
+    STATS     = 3
 };
 
 typedef struct resultMessage{
     char    name[FNAME_SIZE];
     float   dist;
 } resultMessage_t;
+
+typedef struct statsMessage{
+    double  fileLoadTime;
+    double  vectorProcTime;
+    int     numVectors;
+}statsMessage_t;
+
 
 typedef std::map<std::string,scottgs::path_list_type> content_type;
 typedef content_type::const_iterator content_type_citr;
@@ -39,8 +50,8 @@ namespace cmoz{
     void printDirContents(const scottgs::path_list_type file_list);
     void workerParseFile(FILE *search_vector_file, int numResults);
     void getSearchVector(FILE *search_vector_file, std::vector<float> &floats);
-    void createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type);
-    void getResults(int numResults, std::string filename, std::vector<float> &searchVector, std::vector< std::pair<std::string, float> > &results);
+    void createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type, MPI_Datatype *cmoz_stats_type);
+    void getResults(int numResults, std::vector<float> &searchVector, std::vector< std::pair<std::string, float> > &results, std::vector<std::pair<std::string, std::vector<float> > > &lines);
     int  readFile(std::string filename, std::vector<std::pair<std::string, std::vector<float> > > &lines);
     float computeL1Norm(const std::vector<float> *v1, const std::vector<float> *v2);
     void printLines(std::vector<std::pair<std::string, std::vector<float> > > &lines);
@@ -133,16 +144,27 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     #endif
 
     // Create MPI types in this particular thread.  Each thread must do it
-    MPI_Datatype cmoz_result_type;
-    MPI_Datatype cmoz_multipleResults_type;
-    createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type);
+    MPI_Datatype cmoz_result_type, cmoz_multipleResults_type, cmoz_stats_type;
+    createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type, &cmoz_stats_type);
     
-    // Create glocal results object
+    // Create global results object
     std::vector<std::pair <std::string, float> > globalResults;
 
+    // Create aggregated stats objects
+    double fileLoadTimes    = 0;      /*File load times will be averaged at end*/
+    double vectorProcTimes  = 0;      /*Vector processing times will be weighted by num vetors were processed, then divided by total number of vectors at end for average*/
+    int totalNumVectors     = 0;                
+    int numFiles = file_list.size();
 
     // iterate through filenames, send to threads
     scottgs::path_list_type::const_iterator file = file_list.begin();
+
+
+    /*******************
+    Start Timing for whole operation
+    ********************/
+    scottgs::Timing totalTimer;
+    totalTimer.start();
 
     // Send first time to each thread
     // Send a file to each thread
@@ -168,21 +190,38 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     for( ; file!=file_list.end(); ++file){
         // Receive results from a worker
         resultMessage_t results[numResults];
-        MPI_Status status;
+        statsMessage_t  stats;
+        MPI_Status      status;
 
+        std::cout << "Waiting on results from any process." << std::endl;
         // Receive a message from the worker
         MPI_Recv(results,       /* message buffer */
             1,                  /* buffer size */
             cmoz_multipleResults_type,   /* data item is an array of results */
             MPI_ANY_SOURCE,     /* Recieve from thread */
-            MPI_ANY_TAG,        /* tag */
+            RESULTS,            /* tag */
+            MPI_COMM_WORLD,     /* default communicator */
+            &status
+        );
+
+        // Get task number
+        const int sourceCaught = status.MPI_SOURCE;
+
+        std::cout << "Waiting on stats from process " << sourceCaught << std::endl;
+
+        // Get stats from task
+        MPI_Recv(&stats,         /* message buffer */
+            1,                  /* buffer size */
+            cmoz_stats_type,    /* data item is an array of results */
+            sourceCaught,       /* Recieve from thread */
+            STATS,              /* tag */
             MPI_COMM_WORLD,     /* default communicator */
             &status
         );
 
         // Merge results with global results
         #if DEBUG_MESSAGES
-        std::cout << "\n\n";
+        std::cout << "\n\nRecieved stats from process " << sourceCaught;
         #endif
         for(int i = 0 ; i < numResults ; i++){
             std::string name(results[i].name);
@@ -195,10 +234,12 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
 
         sortAndCut(numResults, globalResults);
 
+        // Process stats
+        fileLoadTimes   += stats.fileLoadTime;
+        vectorProcTimes += stats.vectorProcTime;
+        totalNumVectors += stats.numVectors;
 
         // Send new task
-        const int sourceCaught = status.MPI_SOURCE;
-
         // Compose message consisting of "<file path to parse>"
         char *msg = (char *) malloc( FILE_PATH_SIZE * sizeof(char));
         std::string file_path(file->generic_string());
@@ -220,21 +261,38 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
     for(int rank = 1 ; rank < threadCount ; rank ++){
         // Receive results from a worker
         resultMessage_t results[numResults];
-        MPI_Status status;
+        statsMessage_t  stats;
+        MPI_Status      status;
 
+        std::cout << "Waiting on results from any process " << std::endl;
         // Receive a message from the worker
         MPI_Recv(results,      /* message buffer */
             1,                  /* buffer size */
             cmoz_multipleResults_type,   /* data item is an array of results */
             MPI_ANY_SOURCE,     /* Recieve from thread */
-            MPI_ANY_TAG,        /* tag */
+            RESULTS,            /* tag */
+            MPI_COMM_WORLD,     /* default communicator */
+            &status
+        );
+
+        // Get task number
+        const int sourceCaught = status.MPI_SOURCE;
+
+        std::cout << "Waiting on stats from process " << sourceCaught << std::endl;
+
+        // Get stats from task
+        MPI_Recv(&stats,         /* message buffer */
+            1,                  /* buffer size */
+            cmoz_stats_type,    /* data item is an array of results */
+            sourceCaught,       /* Recieve from thread */
+            STATS,              /* tag */
             MPI_COMM_WORLD,     /* default communicator */
             &status
         );
 
         // Merge results with global results
         #if DEBUG_MESSAGES
-        std::cout << "\n\n";
+        std::cout << "\n\nRecieved stats from process " << sourceCaught;
         #endif
         for(int i = 0 ; i < numResults ; i++){
             std::string name(results[i].name);
@@ -246,6 +304,11 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         }
 
         sortAndCut(numResults, globalResults);
+
+        // Process stats
+        fileLoadTimes   += stats.fileLoadTime;
+        vectorProcTimes += stats.vectorProcTime;
+        totalNumVectors += stats.numVectors;
     }
 
     // Send each thread a terminate signal
@@ -253,10 +316,26 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         MPI_Send(0, 0, MPI_INT, rank, TERMINATE, MPI_COMM_WORLD);
     }
 
+    /***************
+    End timing for whole operation
+    ****************/
+    totalTimer.split();
+    double totalWallClockTime = totalTimer.getTotalElapsedTime();
 
     // Print final results:
     #if PRINT_FINAL_RESULTS
     printResults(globalResults);
+
+    std::cout << "Wall clock time: " << totalWallClockTime << std::endl;
+    #endif
+
+    #if REPORT_STATS_ON
+    std::cout << "\n\nSTATS REPORT: \n" << std::endl;
+    std::cout << "Wall clock time:            " << totalWallClockTime << std::endl;
+    std::cout << "Average file load time:     " << (fileLoadTimes/numFiles) << std::endl;
+    std::cout << "Per vector search time:     " << (vectorProcTimes/totalNumVectors) << std::endl;
+    std::cout << "Per vector wall clock time: " << (totalWallClockTime/totalNumVectors) << std::endl;
+    std::cout << "Paralellization speedup:    " << ((vectorProcTimes+fileLoadTimes)/totalWallClockTime) << std::endl;
     #endif
     return;
 }
@@ -266,9 +345,8 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // Create MPI types in this particular thread.  Each thread must do it
-    MPI_Datatype cmoz_result_type;
-    MPI_Datatype cmoz_multipleResults_type;
-    createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type);
+    MPI_Datatype cmoz_result_type, cmoz_multipleResults_type, cmoz_stats_type;
+    createMpiTypes(numResults, &cmoz_result_type, &cmoz_multipleResults_type, &cmoz_stats_type);
 
     // Get line in search file
     std::vector<float> searchVector(NUM_FLOATS);
@@ -301,21 +379,52 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
         std::cout <<"Processing " << messageReceived << "..." << std::endl;
         #endif
 
+        /**************
+        Start timing for reading in file
+        ***************/
+        scottgs::Timing readTimer;
+        readTimer.start();
 
+        // Read in file
+        messageReceived[messageReceived.length()] = '\0';
+        std::vector<std::pair<std::string, std::vector<float> > > lines;
+        
+        #if DEBUG_MESSAGES_2
+        std::cout << "About to read file " << messageReceived << std::endl;
+        #endif
 
+        int numLines = readFile(messageReceived, lines);
 
+        #if DEBUG_MESSAGES_2
+        std::cout << "Read in file " << messageReceived << std::endl;
+        #endif
+        #if DEBUG_MESSAGES_3
+        printLines(lines);
+        #endif
+
+        readTimer.split();
+        double fileReadTime = readTimer.getTotalElapsedTime();
+        #if DEBUG_MESSAGES
+        std::cout << "File read time for " << messageReceived << " was " << fileReadTime << std::endl;
+        #endif
 
 
         // read in / check file name passed in, process against search vector, and send list back
         std::vector< std::pair < std::string, float> > results;
         #if DEBUG_MESSAGES_2
-
-
         std::cout << "About to get results from " << messageReceived << std::endl;
         #endif
 
-        getResults(numResults, messageReceived, searchVector, results);
+        scottgs::Timing vectorProcessingTimer;
+        vectorProcessingTimer.start();
+        getResults(numResults, searchVector, results, lines);
+        vectorProcessingTimer.split();
+        double vectorProcessingTime = vectorProcessingTimer.getTotalElapsedTime();
 
+        #if DEBUG_MESSAGES
+        std::cout << "Total vector processing time for " << messageReceived << " was " << vectorProcessingTime << std::endl;
+        std::cout << numLines << " vectors were processed for " << messageReceived << std::endl;
+        #endif
         #if DEBUG_MESSAGES_2
         std::cout << "Got results for " << messageReceived << std::endl;
         #endif
@@ -335,9 +444,24 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
             1,                          /*Number of objects in bufer*/
             cmoz_multipleResults_type,  /*Type of object in buffer*/
             0,                          /*Destination: master*/
-            PROCESS,                    /*Message tag*/
+            RESULTS,                    /*Message tag*/
             MPI_COMM_WORLD              /*Communictaion channel*/
         );
+
+        std::cout << "Sent results for " << messageReceived << " to master" << std::endl;
+
+        // Send stats message as well
+        statsMessage_t stats = {fileReadTime, vectorProcessingTime, numLines};
+        MPI_Send(
+            &stats,
+            1,
+            cmoz_stats_type,
+            0,
+            STATS,
+            MPI_COMM_WORLD
+        );
+
+        std::cout << "Sent stats for " << messageReceived << " to master"<< std::endl;
     }
     return;
 }
@@ -404,12 +528,11 @@ void cmoz::getSearchVector(FILE *search_vector_file, std::vector<float> &floats)
     free(line);
 }
 
-void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type){
+void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Datatype *cmoz_multipleResults_type, MPI_Datatype *cmoz_stats_type){
     // Create mpi struct type for one result.
     int             numElements = 2;
     int             blockLengths[2] = {FNAME_SIZE, 1};  /*number of chars, number of floats*/
     MPI_Datatype    types[2] = {MPI_CHAR, MPI_FLOAT};   /*types in struct*/
-    // MPI_Datatype    cmoz_result_type;
     MPI_Aint        offsets[2];
     offsets[0] = (MPI_Aint)offsetof(resultMessage_t, name);
     offsets[1] = (MPI_Aint)offsetof(resultMessage_t, dist);
@@ -431,7 +554,6 @@ void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Da
     MPI_Datatype    type[1] = {*cmoz_result_type};
     MPI_Aint        offset[1];
     offset[0] = 0;
-    // MPI_Datatype    cmoz_multipleResults_type;
 
     MPI_Type_create_struct(
         numElements,            /*Number of results, or elements*/
@@ -441,9 +563,28 @@ void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Da
         cmoz_multipleResults_type       /*Object to put type in*/
     );
     MPI_Type_commit(cmoz_multipleResults_type);
+
+
+    // Create stats reporting data type for second message to be passed from workers
+                    numElements = 1;
+    int             blockLengthStats[3] = {1, 1, 1};
+    MPI_Datatype    typeStats[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_INT};
+    MPI_Aint        offsetsStats[3];
+    offsetsStats[0] = (MPI_Aint)offsetof(statsMessage_t, fileLoadTime);
+    offsetsStats[0] = (MPI_Aint)offsetof(statsMessage_t, vectorProcTime);
+    offsetsStats[0] = (MPI_Aint)offsetof(statsMessage_t, numVectors);
+
+    MPI_Type_create_struct(
+        numElements,            /*Number of results, or elements*/
+        blockLengthStats,           /*Number of chars, number of floats*/
+        offsetsStats,                /*Offset of name & distance in each element*/
+        typeStats,                  /*Specify they are chars, and float*/
+        cmoz_stats_type       /*Object to put type in*/
+    );
+    MPI_Type_commit(cmoz_stats_type);
 }
 
-void cmoz::getResults(int numResults, std::string filename, std::vector<float> &searchVector, std::vector<std::pair <std::string, float> > &results){
+void cmoz::getResults(int numResults, std::vector<float> &searchVector, std::vector<std::pair <std::string, float> > &results, std::vector<std::pair<std::string, std::vector<float> > > &lines){
     results.clear();
     if(numResults < 1){
         #if DEBUG_MESSAGES
@@ -452,23 +593,6 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
         MPI_Finalize();
         return;
     }
-
-    filename[filename.length()] = '\0';
-    std::vector<std::pair<std::string, std::vector<float> > > lines;
-    
-    // Parse file
-    #if DEBUG_MESSAGES_2
-    std::cout << "About to read file " << filename << std::endl;
-    #endif
-
-    readFile(filename, lines);
-
-    #if DEBUG_MESSAGES_2
-    std::cout << "Read in file " << filename << std::endl;
-    #endif
-    #if DEBUG_MESSAGES_3
-    printLines(lines);
-    #endif
 
     // Get distances from lines, add to result vector
     std::vector<std::pair<std::string, std::vector<float> > >::iterator itr = lines.begin();
@@ -479,14 +603,14 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     }
 
     #if DEBUG_MESSAGES_2
-    std::cout << "Got distances for " << filename << std::endl;
+    // std::cout << "Got distances for " << filename << std::endl;
     #endif
     
     // partial sort and cut results
     sortAndCut(numResults, results);
 
     #if DEBUG_MESSAGES_2
-    std::cout << "Sorted and cut results from " << filename << std::endl;
+    // std::cout << "Sorted and cut results from " << filename << std::endl;
     #endif
 
     return;
