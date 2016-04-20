@@ -460,7 +460,7 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     #endif
 
     readFile(filename, lines);
-    
+
     #if DEBUG_MESSAGES
     std::cout << "Read in file " << filename << std::endl;
     #endif
@@ -511,6 +511,9 @@ int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std:
         if(token){
             // Put token into string
             std::string fname (token);
+            #if DEBUG_MESSAGES
+            std::cout << fname << std::endl;
+            #endif
 
             // read in floats
             std::vector<float> floats(NUM_FLOATS);
