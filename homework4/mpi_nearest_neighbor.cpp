@@ -2,7 +2,6 @@
 #include <boost/algorithm/string.hpp>
 #include <tgmath.h>
 #include "directory_scanner.hpp"
-// #include "./homework3_copy/hw3.hpp"
 
 #define NUM_FLOATS 4097
 #define FNAME_SIZE 256
