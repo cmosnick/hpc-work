@@ -448,6 +448,9 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     
     // Parse file
     readFile(filename, lines);
+    #if DEBUG_MESSAGES
+    std::cout << "Read in file " << filename << std::endl;
+    #endif
     #if DEBUG_MESSAGES_3
     printLines(lines);
     #endif
@@ -460,9 +463,17 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
         results.push_back(std::pair<std::string, float> (itr->first, temp));
     }
 
+    #if DEBUG_MESSAGES
+    std::cout << "Got distances for " << filename << std::endl;
+    #endif
+    
     // partial sort and cut results
     sortAndCut(numResults, results);
 
+    #if DEBUG_MESSAGES
+    std::cout << "Sorted and cut results from " << filename << std::endl;
+    #endif
+    
     return;
 }
 
