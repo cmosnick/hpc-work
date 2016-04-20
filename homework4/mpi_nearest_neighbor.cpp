@@ -11,7 +11,7 @@
 #define DELIMS ","
 
 #define DEBUG_MESSAGES 1
-#define DEBUG_MESSAGES_2 1
+#define DEBUG_MESSAGES_2 0
 #define DEBUG_MESSAGES_3 0
 #define PRINT_FINAL_RESULTS 1
 #define REPORT_STATS_ON 1
@@ -193,7 +193,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         statsMessage_t  stats;
         MPI_Status      status;
 
-        std::cout << "Waiting on results from any process." << std::endl;
+        // std::cout << "Waiting on results from any process." << std::endl;
         // Receive a message from the worker
         MPI_Recv(results,       /* message buffer */
             1,                  /* buffer size */
@@ -207,7 +207,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         // Get task number
         const int sourceCaught = status.MPI_SOURCE;
 
-        std::cout << "Waiting on stats from process " << sourceCaught << std::endl;
+        // std::cout << "Waiting on stats from process " << sourceCaught << std::endl;
 
         // Get stats from task
         MPI_Recv(&stats,         /* message buffer */
@@ -264,7 +264,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         statsMessage_t  stats;
         MPI_Status      status;
 
-        std::cout << "Waiting on results from any process " << std::endl;
+        // std::cout << "Waiting on results from any process " << std::endl;
         // Receive a message from the worker
         MPI_Recv(results,      /* message buffer */
             1,                  /* buffer size */
@@ -278,7 +278,7 @@ void cmoz::parseFiles(const scottgs::path_list_type file_list, int numResults){
         // Get task number
         const int sourceCaught = status.MPI_SOURCE;
 
-        std::cout << "Waiting on stats from process " << sourceCaught << std::endl;
+        // std::cout << "Waiting on stats from process " << sourceCaught << std::endl;
 
         // Get stats from task
         MPI_Recv(&stats,         /* message buffer */
@@ -448,7 +448,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
             MPI_COMM_WORLD              /*Communictaion channel*/
         );
 
-        std::cout << "Sent results for " << messageReceived << " to master" << std::endl;
+        // std::cout << "Sent results for " << messageReceived << " to master" << std::endl;
 
         // Send stats message as well
         statsMessage_t stats = {fileReadTime, vectorProcessingTime, numLines};
@@ -461,7 +461,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
             MPI_COMM_WORLD
         );
 
-        std::cout << "Sent stats for " << messageReceived << " to master"<< std::endl;
+        // std::cout << "Sent stats for " << messageReceived << " to master"<< std::endl;
     }
     return;
 }
