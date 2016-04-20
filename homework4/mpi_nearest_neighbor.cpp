@@ -455,7 +455,12 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     std::vector<std::pair<std::string, std::vector<float> > > lines;
     
     // Parse file
+    #if DEBUG_MESSAGES
+    std::cout << "About to read file " << filename << std::endl;
+    #endif
+
     readFile(filename, lines);
+    
     #if DEBUG_MESSAGES
     std::cout << "Read in file " << filename << std::endl;
     #endif
