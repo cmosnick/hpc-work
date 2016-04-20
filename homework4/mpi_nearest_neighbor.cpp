@@ -505,7 +505,7 @@ int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std:
     // Get line
     size_t lineSize = LINE_SIZE;
     int numLines = 0;
-    while(getline(&line, &lineSize, infile)){
+    while(getline(&line, &lineSize, infile) && !feof(infile)){
         // Get first token, the filename
         token = strtok(line, DELIMS);
         if(token){
