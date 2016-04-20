@@ -18,7 +18,7 @@ clean:
 	rm -f mpi_nearest_neighbor *.o
 
 
-run_tests: all run_even_split
+run_tests: all run_even_split run_waterfall
 
 
 run_even_split:
@@ -29,5 +29,12 @@ run_even_split:
 	mpirun --hostfile hostfiles/40_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/even.csv && \
 	mpirun --hostfile hostfiles/48_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/even.csv
 
+run_waterfall:
+	mpirun --hostfile  hostfiles/8_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+	mpirun --hostfile hostfiles/16_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+	mpirun --hostfile hostfiles/24_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+	mpirun --hostfile hostfiles/32_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+	mpirun --hostfile hostfiles/40_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv && \
+	mpirun --hostfile hostfiles/48_waterfall mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 outputFiles/waterfall.csv
 
 
