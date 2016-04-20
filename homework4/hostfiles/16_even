@@ -1,3 +1,3 @@
-threads-p02 slots=16 max-slots=5
-threads-p03 slots=16 max-slots=5
-threads-p04 slots=16 max-slots=6
+threads-p02 slots=5 max-slots=16
+threads-p03 slots=5 max-slots=16
+threads-p04 slots=6 max-slots=16
