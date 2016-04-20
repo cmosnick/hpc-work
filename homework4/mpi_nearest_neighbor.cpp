@@ -116,7 +116,6 @@ int main(int argc, char *argv[]){
         }
         else{
             outfile = fopen("default.csv", "a");
-            std::cout
         }
 
         // Delegate parsing of files
