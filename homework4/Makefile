@@ -18,9 +18,16 @@ clean:
 	rm -f mpi_nearest_neighbor *.o
 
 
+run_tests: all run_even_split
 
 
-
+run_even_split:
+	mpirun --hostfile hostfiles/8_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5	&& \
+	mpirun --hostfile hostfiles/16_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5  && \
+	mpirun --hostfile hostfiles/24_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 && \
+	mpirun --hostfile hostfiles/32_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 && \
+	mpirun --hostfile hostfiles/40_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5 && \
+	mpirun --hostfile hostfiles/48_even mpi_nearest_neighbor sample_search_vector.csv /cluster/ 5
 
 
 
