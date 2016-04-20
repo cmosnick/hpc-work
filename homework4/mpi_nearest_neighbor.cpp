@@ -1,7 +1,14 @@
 #include <mpi.h>
 #include <boost/algorithm/string.hpp>
+#include <tgmath.h>
 #include "directory_scanner.hpp"
-#include "./homework3_copy/hw3.hpp"
+// #include "./homework3_copy/hw3.hpp"
+
+#define NUM_FLOATS 4097
+#define FNAME_SIZE 256
+#define FLOAT_CHARS 47
+#define LINE_SIZE FNAME_SIZE + ( NUM_FLOATS * (FLOAT_CHARS + 3) )
+#define DELIMS ","
 
 #define DEBUG_MESSAGES 1
 #define DEBUG_MESSAGES_2 0
@@ -41,6 +48,7 @@ namespace cmoz{
     void printResults(std::vector<std::pair <std::string, float> > &results);
     void sortAndCut(int numResults, std::vector<std::pair <std::string, float> > &results);
     bool comp(const std::pair<std::string, float> &el1, const std::pair<std::string, float> &el2);
+    bool is_float(const char* token);
 }
 
 int main(int argc, char *argv[]){
@@ -360,7 +368,7 @@ void cmoz::getSearchVector(FILE *search_vector_file, std::vector<float> &floats)
         #if DEBUG_MESSAGES
         int rank;
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        std::cout << "Error reading in search vector in thread" << rank << endl;
+        std::cout << "Error reading in search vector in thread" << rank << std::endl;
         #endif
         MPI_Finalize();
         exit(0);
@@ -378,7 +386,7 @@ void cmoz::getSearchVector(FILE *search_vector_file, std::vector<float> &floats)
         uint i = 0;
         do{
             token = strtok(NULL, DELIMS);
-            if(token && is_float(token)){
+            if(token && cmoz::is_float(token)){
                 float temp = atof(token);
                 floats[i]=temp;
             }
@@ -481,7 +489,7 @@ int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std:
             std::string fname (token);
 
             // read in floats
-            vector<float> floats(NUM_FLOATS);
+            std::vector<float> floats(NUM_FLOATS);
             uint i = 0;
             do{
                 token = strtok(NULL, DELIMS);
@@ -495,7 +503,7 @@ int cmoz::readFile(std::string filename, std::vector<std::pair<std::string, std:
             }while( i <= NUM_FLOATS);
 
             // Add fname and vector to pair
-            std::pair <std::string, vector<float> > temp(fname, floats);
+            std::pair <std::string, std::vector<float> > temp(fname, floats);
             lines.push_back(temp);
         }
         else{
@@ -550,6 +558,22 @@ void cmoz::sortAndCut(int numResults, std::vector<std::pair <std::string, float>
 
 bool cmoz::comp(const std::pair<std::string, float> &el1, const std::pair<std::string, float> &el2){
     return (el1.second < el2.second);
+}
+
+// Iterates through token to check if it is a float
+bool cmoz::is_float(const char* token){
+    if(token){
+        uint i = 0;
+        while(token[i] != ',' && token[i]!='\n' && token[i]!='\0'){
+            // Check if char is . or 0-9.  If not, return false
+            if(! ((token[i] == '.') || (token[i]>= '0' && token[i]<= '9')) ){
+                return false;
+            }
+            i++;
+        }
+        return true;
+    }
+    return false;
 }
 
 
