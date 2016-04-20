@@ -311,7 +311,7 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
         #if DEBUG_MESSAGES
         std::cout << "About to get results from " << messageReceived << std::endl;
         #endif
-        
+
         getResults(numResults, messageReceived, searchVector, results);
 
         #if DEBUG_MESSAGES
@@ -444,6 +444,10 @@ void cmoz::createMpiTypes(int numResults, MPI_Datatype *cmoz_result_type, MPI_Da
 void cmoz::getResults(int numResults, std::string filename, std::vector<float> &searchVector, std::vector<std::pair <std::string, float> > &results){
     results.clear();
     if(numResults < 1){
+        #if DEBUG_MESSAGES
+        std::cout << "No point in processing if no results desired" << std::endl;
+        #endif
+        MPI_Finalize();
         return;
     }
 
