@@ -308,6 +308,10 @@ void cmoz::workerParseFile(FILE *search_vector_file, int numResults){
 
         // read in / check file name passed in, process against search vector, and send list back
         std::vector< std::pair < std::string, float> > results;
+        #if DEBUG_MESSAGES
+        std::cout << "About to get results from " << messageReceived << std::endl;
+        #endif
+        
         getResults(numResults, messageReceived, searchVector, results);
 
         #if DEBUG_MESSAGES
@@ -473,7 +477,7 @@ void cmoz::getResults(int numResults, std::string filename, std::vector<float> &
     #if DEBUG_MESSAGES
     std::cout << "Sorted and cut results from " << filename << std::endl;
     #endif
-    
+
     return;
 }
 
