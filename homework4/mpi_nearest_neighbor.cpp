@@ -1,6 +1,6 @@
 #include <mpi.h>
 #include <boost/algorithm/string.hpp>
-#include <tgmath.h>
+#include <math.h>
 #include "directory_scanner.hpp"
 
 #define NUM_FLOATS 4097
