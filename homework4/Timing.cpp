@@ -49,7 +49,7 @@ double scottgs::Timing::getSplitElapsedTime() const {
 
 double scottgs::Timing::getCurrentTime() const {
   struct timeval tp;
-  int rtn;
-  rtn=gettimeofday(&tp, NULL);
+  // int rtn;
+  gettimeofday(&tp, NULL);
   return (double)tp.tv_sec+(1.e-6)*tp.tv_usec;
 }
