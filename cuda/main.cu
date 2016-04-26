@@ -2,6 +2,8 @@
 // #include "stdio.h"
 #include <iostream>
 #include <cuda_runtime.h>
+#include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
+#include <helper_cuda.h>         // helper functions for CUDA error check
 
 
 const char *imageFilename = "lena.ppm";
@@ -35,10 +37,59 @@ int main(int argc, char **argv){
     // Check args
     if(argc < 3){
         std::cout << "\n\nIncorrect number of args.  Should be \n(1)blur filter size {3, 7, 11, or 15}\n(2)input file\n(3)output file" << std::endl;
+        return 0;
+    }
+    // else{
+        // std::cout << "Good job!" << std::endl;
+    // }
+
+    // Get filter buffer size
+    int filterSize = atoi(argv[1]);
+    if( !(filterSize==3 || filterSize==7 || filterSize==11 || filterSize==15) ){
+        std::cout << "Incorrect input for filter size.\nMust be {3, 7, 11, or 15}" << std::endl;
+        return 0;
     }
 
-    else{
-        std::cout << "Good job!" << std::endl;
+    char *inputfile = argv[2];
+    if(!inputfile){
+        return 0;
+    }
+    char *outputfile = argv[3];
+    if(!outputfile){
+        return 0;
     }
 
+
+    // Load PGM onto device
+    int devID = findCudaDevice(argc, (const char **) argv);
+
+    // load image from disk
+    float *hData = NULL;
+    unsigned int width, height;
+    char *imagePath = sdkFindFilePath(imageFilename, inputfile);
+
+    if (imagePath == NULL)
+    {
+        std::cout << "Unable to source image file:"<< imageFilename << " %s\n" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    sdkLoadPGM(imagePath, &hData, &width, &height);
+
+    unsigned int size = width * height * sizeof(float);
+    printf("Loaded '%s', %d x %d pixels\n with size %d", imageFilename, width, height, size);
+
+    return 1;
 }
+
+
+
+
+
+
+
+
+
+
+
+
