@@ -1,11 +1,9 @@
 #include "stdlib.h"
-// #include "stdio.h"
 #include <iostream>
 #include <cuda_runtime.h>
 #include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
 #include <helper_cuda.h>         // helper functions for CUDA error check
 
-// #define DEBUG_MESSAGES_ON 1
 
 #define GRID_SIZE   
 #define BLOCK_SIZE  4
@@ -23,9 +21,8 @@ __global__ void blurKernel(float *outputData, int width, int height, int filterS
     unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
     unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
     unsigned int tid=threadIdx.y*blockDim.y+ threadIdx.x;
-
-
     uint pixelRadius = filterSize >> 1;
+
 
     if(x <= pixelRadius || y <= pixelRadius || x >= (width-pixelRadius) || y >= (height-pixelRadius)){
         // Do nothing
@@ -61,12 +58,9 @@ __global__ void blurKernel(float *outputData, int width, int height, int filterS
             window[(tid * arraySize) + i]     = window[(tid * arraySize) + min];
             window[(tid * arraySize) + min]   = temp;
             syncthreads();
-
         }
         // get median
         outputData[(y * width) + x] = window[(tid * arraySize) + halfArraySize];
-
-        // outputData[(y*width) + x] = tex2D(tex, x, y);
     }
 }
 
@@ -79,13 +73,6 @@ int main(int argc, char **argv){
         #endif
         return 0;
     }
-    // else{
-        // std::cout << "Good job!" << std::endl;
-    // }
-
-    #if TEST_MODE
-    std::cout << "In test mode!" << std::endl;
-    #endif
 
     // Get filter buffer size
     int filterSize = atoi(argv[1]);
@@ -95,6 +82,9 @@ int main(int argc, char **argv){
         #endif
         return 0;
     }
+    #if TEST_MODE
+    std::cout << "Testing " << filterSize << " pixel filter with " << BLOCK_SIZE << " x " << BLOCK_SIZE << " blocks" << std::endl;
+    #endif
 
     char *inputfile = argv[2];
     if(!inputfile){
@@ -114,27 +104,14 @@ int main(int argc, char **argv){
     unsigned int width, height;
     char *imagePath = sdkFindFilePath(inputfile, argv[0]);
 
-    if (imagePath == NULL)
-    {
+    if (imagePath == NULL){
         #if DEBUG_MESSAGES_ON
         std::cout << "Unable to source image file:"<< inputfile << " %s\n" << std::endl;
         #endif
         exit(EXIT_FAILURE);
     }
-
     sdkLoadPGM(imagePath, &origData, &width, &height);
-    // char *outimagePath = sdkFindFilePath(outputfile, argv[0]);
-    // if (outimagePath == NULL)
-    // {
-    //     #if DEBUG_MESSAGES_ON
-    //     std::cout << "Unable to source image file:"<< outputfile << "\n" << std::endl;
-    //     #endif
-    //     exit(EXIT_FAILURE);
-    // }
-    // Sanity check to make sure file is loaded in correctly
-    // TODO: either file is not loaded correctly, or it is not saving correctly
-    // sdkSavePGM(outimagePath, origData, width, height);
-
+    
     int size = width * height * sizeof(float);
     #if DEBUG_MESSAGES_ON
     std::cout << "Loaded " << inputfile << ", " << width << " x "<< height << " pixels with size " << (uint)size << std::endl;
@@ -204,8 +181,7 @@ int main(int argc, char **argv){
                                cudaMemcpyDeviceToHost));
     // Write to file
     char *outimagePath = sdkFindFilePath(outputfile, argv[0]);
-    if (outimagePath == NULL)
-    {
+    if (outimagePath == NULL){
         #if DEBUG_MESSAGES_ON
         std::cout << "Unable to source image file:"<< outputfile << "\n" << std::endl;
         #endif
