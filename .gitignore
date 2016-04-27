@@ -98,5 +98,6 @@ data/8400_HPC.csv
 !homework4/Makefile
 homework4/mpi_nearest_neighbor
 
+!cuda/Makefile
 cuda/main
 cuda/main.o
