@@ -60,7 +60,7 @@ __global__ void blurKernel(float *outputData, int width, int height, int filterS
             syncthreads();
         }
         // get median
-        outputData[(y * width) + x] = window[(tid * arraySize) + halfArraySize];
+        outputData[(y * width) + x] = window[(tid * arraySize) + halfArraySize-1];
     }
 }
 
