@@ -268,7 +268,6 @@ void createGoldenStandard( float *origData, float *standData, unsigned int width
             standData[(y*width) + x] = neighbors[halfArraySize];
         }
     }
-
     return;
 }
 
@@ -284,7 +283,7 @@ float compareToStandard(float *standData, float *testData, uint width, uint heig
                 numCorrect++;
             }
             else{
-                // std::cout << standData[(y*width) + x] << " vs " << testData[(y*width) + x] << std::endl;
+                std::cout << standData[(y*width) + x] << " vs " << testData[(y*width) + x] << std::endl;
             }
             count++;
         }
