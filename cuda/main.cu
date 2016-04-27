@@ -5,7 +5,7 @@
 #include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
 #include <helper_cuda.h>         // helper functions for CUDA error check
 
-#define DEBUG_MESSAGES_ON 1
+// #define DEBUG_MESSAGES_ON 1
 
 #define GRID_SIZE   
 #define BLOCK_SIZE  4
@@ -82,6 +82,10 @@ int main(int argc, char **argv){
     // else{
         // std::cout << "Good job!" << std::endl;
     // }
+
+    #if TEST_MODE
+    std::cout << "In test mode!" << std::endl;
+    #endif
 
     // Get filter buffer size
     int filterSize = atoi(argv[1]);
@@ -167,8 +171,8 @@ int main(int argc, char **argv){
     // Bind the array to the texture
     checkCudaErrors(cudaBindTextureToArray(tex, inArray, channelDesc));
 
-    uint pixelRadius = filterSize >> 1;
     #if DEBUG_MESSAGES_ON
+    uint pixelRadius = filterSize >> 1;
     std::cout << "Pixel radius is " << pixelRadius << std::endl;
     #endif
     // Set up grid
