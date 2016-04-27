@@ -1,7 +1,5 @@
 #!/bin/bash
 
-rm *.jpg
-
 
 cp lena_out.pgm lena_out.jpg
 cp lena_out_3.pgm lena_out_3.jpg
