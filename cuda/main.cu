@@ -51,7 +51,7 @@ __global__ void blurKernel(float *outputData, int width, int height, int filterS
         int halfArraySize = (arraySize/2) + 1;
         for(int i = 0 ; i < halfArraySize ; i++){
             int min = i;
-            for(int j = i+1 ; j < arraySize ; j++){
+            for(int j = i + 1 ; j < arraySize ; j++){
                 if(window[(tid * arraySize) + j] < window[(tid * arraySize) + min]){
                     min = j;
                 }
@@ -214,7 +214,7 @@ int main(int argc, char **argv){
 
 
 
-    return 1;
+    return 0;
 }
 
 
