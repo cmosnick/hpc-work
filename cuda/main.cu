@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
 #include <helper_cuda.h>         // helper functions for CUDA error check
+#include <chrono>
 
 
 #define GRID_SIZE   
@@ -102,12 +103,6 @@ int main(int argc, char **argv){
     int devID = findCudaDevice(argc, (const char **) argv);
 
     #if TEST_MODE
-    // Open statistics file
-    // char *statsPath = sdkFindFilePath(statsFileName, argv[0]);
-    // if(statsPath == NULL){
-    //     std::cout<< "Could not find stats file" << std::endl;
-    // }
-
     FILE *statsFile = fopen(statsFileName, "a");
     if(!statsFile){
         std::cout << "Couldn't open stats file" << std::endl;
@@ -117,6 +112,9 @@ int main(int argc, char **argv){
     /***************
     LOAD INPUT FILE
     ****************/
+    // Start timing for load time
+    std::chrono::time_point <std::chrono::system_clock> start, end;
+
     float *origData = NULL;
     unsigned int width, height;
     char *imagePath = sdkFindFilePath(inputfile, argv[0]);
@@ -127,8 +125,18 @@ int main(int argc, char **argv){
         #endif
         exit(EXIT_FAILURE);
     }
+    start = std::chrono::system_clock::now();
     sdkLoadPGM(imagePath, &origData, &width, &height);
-    
+    end = std::chrono::system_clock::now();
+
+    // Print to stats file
+    #if TEST_MODE
+    if(statsFile){
+        std::chrono::duration<double> timeElapsed = end-start;
+        fprintf(statsFile, "LoadTimeStats: %f\n", timeElapsed);
+    }
+    #endif
+
     int size = width * height * sizeof(float);
     #if DEBUG_MESSAGES_ON
     std::cout << "Loaded " << inputfile << ", " << width << " x "<< height << " pixels with size " << (uint)size << std::endl;

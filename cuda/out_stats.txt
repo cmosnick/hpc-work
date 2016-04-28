@@ -1,4 +1,8 @@
+LoadTimeStats: 0.003091
 AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003047
 AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003047
 AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003082
 AccuracyStats: 15 100.000000
