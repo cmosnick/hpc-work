@@ -172,8 +172,12 @@ main: main.o
 main.o: main.cu
 	$(EXEC) $(NVCC) $(CFLAGS) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-tests: 
+tests: run_test
+	./collect_output
+
+run_test:
 	make TEST_MODE="1" DEBUG_OFF="1"
+	rm out_stats.txt
 	for (( i = 0; i < $(NUMRUNS); ++i ));  do \
 		./main 3 data/lena.pgm  data/lena_out_3.pgm  data/lena_std_3.pgm  && \
 		./main 7 data/lena.pgm  data/lena_out_7.pgm  data/lena_std_7.pgm  && \
@@ -182,6 +186,7 @@ tests:
 	done;
 	cd data/ && \
 	./copy_script
+
 
 clean:
 	rm -f main main.o

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep "AccuracyStats:" out_stats.txt | awk -F" " '{printf("%d, %f\n",$2,$3);}' > data/accuracy_stats.csv 
