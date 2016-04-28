@@ -31,6 +31,7 @@ __global__ void blurKernel(float *outputData, int width, int height, int filterS
 
     if(x <= pixelRadius || y <= pixelRadius || x >= (width-pixelRadius) || y >= (height-pixelRadius)){
         // Do nothing
+        outputData[(y * width) + x] = tex2D(tex, x, y);
     }
     else{
         uint x_start    = x - pixelRadius;
@@ -213,6 +214,18 @@ int main(int argc, char **argv){
     // Compare output to standard, get percentage correct back
     float percentage = compareToStandard(standData, hOutputData, width, height);
     std::cout << "percentage correct: " << percentage << "%" << std::endl;
+
+    // Print to file if specified
+    if(argc >= 4){
+        char *stdOutImagePath = sdkFindFilePath(argv[4], argv[0]);
+        if (stdOutImagePath == NULL){
+            #if DEBUG_MESSAGES_ON
+            std::cout << "Unable to source image file:"<< argv[4] << "\n" << std::endl;
+            #endif
+            exit(EXIT_FAILURE);
+        }
+        sdkSavePGM(stdOutImagePath, standData, width, height);
+    }
     #endif
 
     return 0;
@@ -228,44 +241,49 @@ void createGoldenStandard( float *origData, float *standData, unsigned int width
     }
 
     uint pixelRadius = filterSize >> 1,
-        x_start = pixelRadius,
-        x_end   = width-pixelRadius,
-        y_start = pixelRadius,
-        y_end   = height-pixelRadius,
+        // x_start = pixelRadius,
+        // x_end   = width-pixelRadius,
+        // y_start = pixelRadius,
+        // y_end   = height-pixelRadius,
         arraySize = filterSize * filterSize,
         halfArraySize = arraySize/2 + 1;
 
 
-    for(int y = y_start ; y <= y_end ; y++){
-        for(int x = x_start ; x <= x_end ; x++){
-            // At 1 pixel currently.  Iterate through its neighbors and find median.
-            float neighbors[arraySize];
-            uint p_x_start = x - pixelRadius,
-                 p_x_end   = x + pixelRadius,
-                 p_y_start = y - pixelRadius,
-                 p_y_end   = y + pixelRadius;
-
-            // Add neighbors to neighbors array
-            for(int i = 0, yy = p_y_start ; yy <= p_y_end ; i++, yy++){
-                for(int j = 0, xx = p_x_start ; xx <= p_x_end ; j++, xx++){
-                    neighbors[(i * filterSize) + j] = origData[(yy * width) + xx];
-                }
+    for(int y = 0 ; y <= height ; y++){
+        for(int x = 0 ; x <= width ; x++){
+            if(x <= pixelRadius || x >= width-pixelRadius || y <= pixelRadius || y >= height-pixelRadius){
+                standData[(y*width) + x] = origData[(y*width) + x];
             }
+            else{
+                // At 1 pixel currently.  Iterate through its neighbors and find median.
+                float neighbors[arraySize];
+                uint p_x_start = x - pixelRadius,
+                     p_x_end   = x + pixelRadius,
+                     p_y_start = y - pixelRadius,
+                     p_y_end   = y + pixelRadius;
 
-            // Get median, assign to new array
-            for(int i = 0 ; i <= halfArraySize ; i++){
-                int min = i;
-                for(int j = i + 1 ; j < arraySize ; j++){
-                    if(neighbors[j] < neighbors[min]){
-                        min = j;
+                // Add neighbors to neighbors array
+                for(int i = 0, yy = p_y_start ; yy <= p_y_end ; i++, yy++){
+                    for(int j = 0, xx = p_x_start ; xx <= p_x_end ; j++, xx++){
+                        neighbors[(i * filterSize) + j] = origData[(yy * width) + xx];
                     }
                 }
-                float temp = neighbors[i];
-                neighbors[i] = neighbors[min];
-                neighbors[min] = temp;
-            }
 
-            standData[(y*width) + x] = neighbors[halfArraySize];
+                // Get median, assign to new array
+                for(int i = 0 ; i <= halfArraySize ; i++){
+                    int min = i;
+                    for(int j = i + 1 ; j < arraySize ; j++){
+                        if(neighbors[j] < neighbors[min]){
+                            min = j;
+                        }
+                    }
+                    float temp = neighbors[i];
+                    neighbors[i] = neighbors[min];
+                    neighbors[min] = temp;
+                }
+
+                standData[(y*width) + x] = neighbors[halfArraySize];
+            }
         }
     }
     return;
@@ -283,7 +301,7 @@ float compareToStandard(float *standData, float *testData, uint width, uint heig
                 numCorrect++;
             }
             else{
-                std::cout << standData[(y*width) + x] << " vs " << testData[(y*width) + x] << std::endl;
+                // std::cout << standData[(y*width) + x] << " vs " << testData[(y*width) + x] << std::endl;
             }
             count++;
         }

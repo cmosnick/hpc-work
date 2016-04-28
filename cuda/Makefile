@@ -175,10 +175,10 @@ main.o: main.cu
 tests: 
 	make TEST_MODE="1" DEBUG_OFF="1"
 	for (( i = 0; i < $(NUMRUNS); ++i ));  do \
-		./main 3 data/lena.pgm data/lena_out_3.pgm   && \
-		./main 7 data/lena.pgm data/lena_out_7.pgm   && \
-		./main 11 data/lena.pgm data/lena_out_11.pgm && \
-		./main 15 data/lena.pgm data/lena_out_15.pgm; \
+		./main 3 data/lena.pgm  data/lena_out_3.pgm  data/lena_std_3.pgm  && \
+		./main 7 data/lena.pgm  data/lena_out_7.pgm  data/lena_std_7.pgm  && \
+		./main 11 data/lena.pgm data/lena_out_11.pgm data/lena_std_11.pgm && \
+		./main 15 data/lena.pgm data/lena_out_15.pgm data/lena_std_15.pgm; \
 	done;
 	cd data/ && \
 	./copy_script
