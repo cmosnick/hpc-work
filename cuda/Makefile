@@ -93,7 +93,7 @@ endif
 
 # Debug build flags
 ifeq ($(dbg),1)
-      NVCCFLAGS += -g -G
+      NVCCFLAGS += -g -G 
       TARGET := debug
 else
       TARGET := release
@@ -161,6 +161,7 @@ CFLAGS += -DDEBUG_MESSAGES_ON=0
 else 
 CFLAGS += -DDEBUG_MESSAGES_ON=1
 endif
+CFLAGS += -std=c++11
 
 all: main
 
