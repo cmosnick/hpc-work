@@ -6,3 +6,9 @@ cp lena_out_3.pgm lena_out_3.jpg
 cp lena_out_7.pgm lena_out_7.jpg
 cp lena_out_11.pgm lena_out_11.jpg
 cp lena_out_15.pgm lena_out_15.jpg
+
+# cp lena_std.pgm lena_out.jpg
+cp lena_std_3.pgm lena_std_3.jpg
+cp lena_std_7.pgm lena_std_7.jpg
+cp lena_std_11.pgm lena_std_11.jpg
+cp lena_std_15.pgm lena_std_15.jpg
