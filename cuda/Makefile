@@ -175,9 +175,11 @@ main.o: main.cu
 
 tests: run_test
 	./collect_output
+	python generate_charts.py
 
 run_test:
 	make TEST_MODE="1" DEBUG_OFF="1"
+	touch out_stats.txt
 	rm out_stats.txt
 	for (( i = 0; i < $(NUMRUNS); ++i ));  do \
 		./main 3 data/lena.pgm  data/lena_out_3.pgm  data/lena_std_3.pgm  && \
@@ -187,6 +189,7 @@ run_test:
 	done;
 	cd data/ && \
 	./copy_script
+	cd ..
 
 
 clean:
