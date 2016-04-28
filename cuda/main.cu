@@ -12,7 +12,7 @@ typedef unsigned int uint;
 void createGoldenStandard( float *origData, float *standData, unsigned int width, unsigned int height, uint filterSize);
 float compareToStandard( float *standData, float *testData, uint width, uint height);
 
-
+const char *statsFileName = "out_stats.txt";
 
 // Texture reference for 2D float texture
 texture<float, 2, cudaReadModeElementType> tex;
@@ -101,6 +101,18 @@ int main(int argc, char **argv){
     // Load PGM onto device
     int devID = findCudaDevice(argc, (const char **) argv);
 
+    #if TEST_MODE
+    // Open statistics file
+    // char *statsPath = sdkFindFilePath(statsFileName, argv[0]);
+    // if(statsPath == NULL){
+    //     std::cout<< "Could not find stats file" << std::endl;
+    // }
+
+    FILE *statsFile = fopen(statsFileName, "a");
+    if(!statsFile){
+        std::cout << "Couldn't open stats file" << std::endl;
+    }
+    #endif
 
     /***************
     LOAD INPUT FILE
@@ -214,6 +226,8 @@ int main(int argc, char **argv){
     // Compare output to standard, get percentage correct back
     float percentage = compareToStandard(standData, hOutputData, width, height);
     std::cout << "percentage correct: " << percentage << "%" << std::endl;
+
+    fprintf(statsFile, "AccuracyStats: %d %f\n", filterSize, percentage);
 
     // Print to file if specified
     if(argc >= 4){
