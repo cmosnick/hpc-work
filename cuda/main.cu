@@ -97,7 +97,7 @@ int main(int argc, char **argv){
         return 0;
     }
     #if TEST_MODE
-    std::cout << "Testing " << filterSize << " pixel filter with " << BLOCK_SIZE << " x " << BLOCK_SIZE << " blocks" << std::endl;
+    std::cout << "\n\n\nTesting " << filterSize << " pixel filter with " << BLOCK_SIZE << " x " << BLOCK_SIZE << " blocks" << std::endl;
     #endif
     // Load PGM onto device
     int devID = findCudaDevice(argc, (const char **) argv);
@@ -163,7 +163,7 @@ int main(int argc, char **argv){
                                       cudaMemcpyHostToDevice));
 
     #if DEBUG_MESSAGES_ON
-    std::cout << "\n\nLoaded " << inputfile << " onto device." << std::endl;
+    std::cout << "\nLoaded " << inputfile << " onto device." << std::endl;
     #endif
 
 
@@ -186,7 +186,7 @@ int main(int argc, char **argv){
 
 
     #if DEBUG_MESSAGES_ON
-    std::cout << "\n\nBlocks and grid set up.\nBlock is " << dimBlock.x << " x " << dimBlock.y << \
+    std::cout << "\nBlocks and grid set up.\nBlock is " << dimBlock.x << " x " << dimBlock.y << \
         "\nGrid is " << dimGrid.x << " x " << dimGrid.y << std::endl;
     std::cout << "Pixel radius is " << (filterSize >> 1) << std::endl;
     std::cout << "Window size is: " << window_size << std::endl;
@@ -239,13 +239,20 @@ int main(int argc, char **argv){
     CREATE STANDARD FILE TO TEST CUDA SOLUTION ON HOST
     **************/
     #if TEST_MODE
+    start = std::chrono::system_clock::now();
     // Allocate mem for the standard
     float *standData = (float *) malloc(size);
     createGoldenStandard(origData, standData, width, height, filterSize);
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> timeElapsed = end-start;
+    // Print timing to file
+    if(statsFile){
+        fprintf(statsFile, "GSTimingStats: %d %f\n", filterSize, timeElapsed);
+    }
 
     // Compare output to standard, get percentage correct back
     float percentage = compareToStandard(standData, hOutputData, width, height);
-    std::cout << "percentage correct: " << percentage << "%" << std::endl;
+    std::cout << "Percentage correct: " << percentage << "%" << std::endl;
 
     fprintf(statsFile, "AccuracyStats: %d %f\n", filterSize, percentage);
 
@@ -275,10 +282,6 @@ void createGoldenStandard( float *origData, float *standData, unsigned int width
     }
 
     uint pixelRadius = filterSize >> 1,
-        // x_start = pixelRadius,
-        // x_end   = width-pixelRadius,
-        // y_start = pixelRadius,
-        // y_end   = height-pixelRadius,
         arraySize = filterSize * filterSize,
         halfArraySize = arraySize/2 + 1;
 
@@ -315,7 +318,6 @@ void createGoldenStandard( float *origData, float *standData, unsigned int width
                     neighbors[i] = neighbors[min];
                     neighbors[min] = temp;
                 }
-
                 standData[(y*width) + x] = neighbors[halfArraySize];
             }
         }

@@ -1,12 +1,320 @@
-LoadTimeStats: 0.003063
-ComputeTimeStats: 3 0.002826
+LoadTimeStats: 0.003087
+ComputeTimeStats: 3 0.002840
+GSTimingStats: 3 0.068811
 AccuracyStats: 3 100.000000
-LoadTimeStats: 0.003057
-ComputeTimeStats: 7 0.024163
+LoadTimeStats: 0.003094
+ComputeTimeStats: 7 0.024119
+GSTimingStats: 7 0.951587
 AccuracyStats: 7 100.000000
-LoadTimeStats: 0.003049
-ComputeTimeStats: 11 0.289100
+LoadTimeStats: 0.003070
+ComputeTimeStats: 11 0.289135
+GSTimingStats: 11 4.472292
 AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003198
+ComputeTimeStats: 15 1.937774
+GSTimingStats: 15 13.827965
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003082
+ComputeTimeStats: 3 0.002786
+GSTimingStats: 3 0.069086
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003222
+ComputeTimeStats: 7 0.024199
+GSTimingStats: 7 0.951844
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003083
+ComputeTimeStats: 11 0.289111
+GSTimingStats: 11 4.479839
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003121
+ComputeTimeStats: 15 1.937765
+GSTimingStats: 15 13.816261
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003134
+ComputeTimeStats: 3 0.002797
+GSTimingStats: 3 0.068669
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003117
+ComputeTimeStats: 7 0.024187
+GSTimingStats: 7 0.953236
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003083
+ComputeTimeStats: 11 0.289139
+GSTimingStats: 11 4.473542
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003092
+ComputeTimeStats: 15 1.937769
+GSTimingStats: 15 13.840389
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003171
+ComputeTimeStats: 3 0.002806
+GSTimingStats: 3 0.068784
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003080
+ComputeTimeStats: 7 0.024182
+GSTimingStats: 7 0.953111
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003177
+ComputeTimeStats: 11 0.289165
+GSTimingStats: 11 4.475925
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003086
+ComputeTimeStats: 15 1.937767
+GSTimingStats: 15 13.813312
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003118
+ComputeTimeStats: 3 0.002832
+GSTimingStats: 3 0.068722
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003109
+ComputeTimeStats: 7 0.024246
+GSTimingStats: 7 0.966125
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003071
+ComputeTimeStats: 11 0.289133
+GSTimingStats: 11 4.476618
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003087
+ComputeTimeStats: 15 1.937751
+GSTimingStats: 15 13.814793
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003250
+ComputeTimeStats: 3 0.002853
+GSTimingStats: 3 0.068505
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003081
+ComputeTimeStats: 7 0.024181
+GSTimingStats: 7 0.952328
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003139
+ComputeTimeStats: 11 0.289132
+GSTimingStats: 11 4.469597
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003086
+ComputeTimeStats: 15 1.937737
+GSTimingStats: 15 13.822449
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003127
+ComputeTimeStats: 3 0.002853
+GSTimingStats: 3 0.069101
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003088
+ComputeTimeStats: 7 0.024108
+GSTimingStats: 7 0.951386
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003116
+ComputeTimeStats: 11 0.289140
+GSTimingStats: 11 4.485585
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003109
+ComputeTimeStats: 15 1.937775
+GSTimingStats: 15 13.859239
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003102
+ComputeTimeStats: 3 0.002845
+GSTimingStats: 3 0.068630
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003071
+ComputeTimeStats: 7 0.024212
+GSTimingStats: 7 0.952998
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003034
+ComputeTimeStats: 11 0.289128
+GSTimingStats: 11 4.482791
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.002980
+ComputeTimeStats: 15 1.937743
+GSTimingStats: 15 13.846136
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003056
+ComputeTimeStats: 3 0.002787
+GSTimingStats: 3 0.068521
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.002986
+ComputeTimeStats: 7 0.024199
+GSTimingStats: 7 0.958681
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003078
+ComputeTimeStats: 11 0.289112
+GSTimingStats: 11 4.474230
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003087
+ComputeTimeStats: 15 1.937770
+GSTimingStats: 15 13.831625
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003031
+ComputeTimeStats: 3 0.002839
+GSTimingStats: 3 0.068378
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003065
+ComputeTimeStats: 7 0.024204
+GSTimingStats: 7 0.953378
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003078
+ComputeTimeStats: 11 0.289343
+GSTimingStats: 11 4.481011
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003020
+ComputeTimeStats: 15 1.937733
+GSTimingStats: 15 13.858815
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003077
+ComputeTimeStats: 3 0.002858
+GSTimingStats: 3 0.068938
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003083
+ComputeTimeStats: 7 0.024185
+GSTimingStats: 7 0.953982
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.002983
+ComputeTimeStats: 11 0.289112
+GSTimingStats: 11 4.479638
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003079
+ComputeTimeStats: 15 1.937747
+GSTimingStats: 15 13.851381
+AccuracyStats: 15 100.000000
 LoadTimeStats: 0.003025
-ComputeTimeStats: 15 1.937716
+ComputeTimeStats: 3 0.002862
+GSTimingStats: 3 0.068652
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.002999
+ComputeTimeStats: 7 0.024168
+GSTimingStats: 7 0.951075
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003090
+ComputeTimeStats: 11 0.289080
+GSTimingStats: 11 4.476599
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003073
+ComputeTimeStats: 15 1.937744
+GSTimingStats: 15 13.828062
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.002959
+ComputeTimeStats: 3 0.002837
+GSTimingStats: 3 0.068448
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003143
+ComputeTimeStats: 7 0.024162
+GSTimingStats: 7 0.952567
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003060
+ComputeTimeStats: 11 0.289107
+GSTimingStats: 11 4.488182
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003096
+ComputeTimeStats: 15 1.937744
+GSTimingStats: 15 13.820890
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003209
+ComputeTimeStats: 3 0.002809
+GSTimingStats: 3 0.068716
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003117
+ComputeTimeStats: 7 0.024215
+GSTimingStats: 7 0.953019
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003097
+ComputeTimeStats: 11 0.289110
+GSTimingStats: 11 4.469696
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003129
+ComputeTimeStats: 15 1.937752
+GSTimingStats: 15 13.839096
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003109
+ComputeTimeStats: 3 0.002840
+GSTimingStats: 3 0.068735
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003135
+ComputeTimeStats: 7 0.024214
+GSTimingStats: 7 0.958909
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003122
+ComputeTimeStats: 11 0.289115
+GSTimingStats: 11 4.470612
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003088
+ComputeTimeStats: 15 1.937753
+GSTimingStats: 15 13.852177
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003152
+ComputeTimeStats: 3 0.002854
+GSTimingStats: 3 0.069027
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003201
+ComputeTimeStats: 7 0.024249
+GSTimingStats: 7 0.957532
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003135
+ComputeTimeStats: 11 0.289100
+GSTimingStats: 11 4.472816
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003091
+ComputeTimeStats: 15 1.937739
+GSTimingStats: 15 13.831573
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003080
+ComputeTimeStats: 3 0.002843
+GSTimingStats: 3 0.068737
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003104
+ComputeTimeStats: 7 0.024165
+GSTimingStats: 7 0.952324
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003096
+ComputeTimeStats: 11 0.289120
+GSTimingStats: 11 4.480554
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003162
+ComputeTimeStats: 15 1.937769
+GSTimingStats: 15 13.838425
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003112
+ComputeTimeStats: 3 0.002839
+GSTimingStats: 3 0.068617
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003101
+ComputeTimeStats: 7 0.024212
+GSTimingStats: 7 0.952723
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003160
+ComputeTimeStats: 11 0.289120
+GSTimingStats: 11 4.476830
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003104
+ComputeTimeStats: 15 1.937728
+GSTimingStats: 15 13.845508
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003067
+ComputeTimeStats: 3 0.002873
+GSTimingStats: 3 0.068743
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003078
+ComputeTimeStats: 7 0.024208
+GSTimingStats: 7 0.953436
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003086
+ComputeTimeStats: 11 0.289125
+GSTimingStats: 11 4.478064
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003083
+ComputeTimeStats: 15 1.937718
+GSTimingStats: 15 13.828920
+AccuracyStats: 15 100.000000
+LoadTimeStats: 0.003123
+ComputeTimeStats: 3 0.002865
+GSTimingStats: 3 0.068415
+AccuracyStats: 3 100.000000
+LoadTimeStats: 0.003072
+ComputeTimeStats: 7 0.024211
+GSTimingStats: 7 0.953435
+AccuracyStats: 7 100.000000
+LoadTimeStats: 0.003070
+ComputeTimeStats: 11 0.289103
+GSTimingStats: 11 4.471979
+AccuracyStats: 11 100.000000
+LoadTimeStats: 0.003066
+ComputeTimeStats: 15 1.937744
+GSTimingStats: 15 13.814268
 AccuracyStats: 15 100.000000
