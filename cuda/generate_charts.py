@@ -94,7 +94,7 @@ def compareCPUvsGPU():
     plt.xlabel("Filter Size (px)")
     plt.ylabel("CPU(red) and GPU(green) times (s)")
     plt.show()
-    fig.savefig("cpu_gpu.pdf")
+    fig.savefig("data/cpu_gpu.pdf")
 
     fig = plt.figure()
     fig.suptitle("ln( CPU vs GPU Processing Speedup )")
@@ -103,7 +103,7 @@ def compareCPUvsGPU():
     plt.xlabel("Filter Size (px)")
     plt.ylabel("ln( CPU(red) and GPU(green) times ) (s)")
     plt.show()
-    fig.savefig("cpu_gpu_ln.pdf")
+    fig.savefig("data/cpu_gpu_ln.pdf")
 
 
 def  main():
