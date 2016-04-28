@@ -153,6 +153,8 @@ int main(int argc, char **argv){
                                     &channelDesc,
                                     width,
                                     height));
+    // Start timer
+    start = std::chrono::system_clock::now();
     checkCudaErrors(cudaMemcpyToArray(inArray,
                                       0,
                                       0,
@@ -208,6 +210,16 @@ int main(int argc, char **argv){
                                (const void*)outData,
                                size,
                                cudaMemcpyDeviceToHost));
+    end = std::chrono::system_clock::now();
+    // Write to stats file
+    #if TEST_MODE
+    if(statsFile){
+        std::chrono::duration<double> timeElapsed = end-start;
+        fprintf(statsFile, "ComputeTimeStats: %d %f\n", filterSize, timeElapsed);
+    }
+    #endif
+
+
     // Write to file
     char *outimagePath = sdkFindFilePath(outputfile, argv[0]);
     if (outimagePath == NULL){
