@@ -30,7 +30,7 @@ texture<float, 2, cudaReadModeElementType> tex;
 __global__ void sobelKernel(float *outputData, int width, int height, int xory){
     extern __shared__ float window[];
     const int sobel_x[3][3] = {{-1, 0, 1}, {-2, 0 , 2}, {-1, 0, 1}};
-    // const int sobel_y[3][3] = {{-1, -2, 1}, {0, 0, 0}, {1, 2, 1}};
+    const int sobel_y[3][3] = {{-1, -2, 1}, {0, 0, 0}, {1, 2, 1}};
 
     // calculate texture coordinates
     unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
@@ -53,27 +53,24 @@ __global__ void sobelKernel(float *outputData, int width, int height, int xory){
         // Fill array with values
         for(int i = x_start, ii=0 ; i <= x_end; i++, ii++){
             for(int j =  y_start, jj=0 ; j <= y_end ; j++, jj++){
-                // if(xory == X_SOBEL){
+                if(xory == X_SOBEL){
                     sum += tex2D(tex, i, j) * sobel_x[ii][jj];                    
-                // }
-                // else if(xory == Y_SOBEL){
-                //     sum += tex2D(tex, i, j) * sobel_y[ii][jj];                    
-                // }
+                }
+                else if(xory == Y_SOBEL){
+                    sum += tex2D(tex, i, j) * sobel_y[ii][jj];                    
+                }
             }
         }
-        // syncthreads();
         outputData[(y * width) + x] = sum;
-        // outputData[(y * width) + x] = tex2D(tex, x, y);
-
     }
 }
 
 
 int main(int argc, char **argv){
     // Check args
-    if(argc < 2){
+    if(argc < 3){
         #if DEBUG_MESSAGES_ON
-        std::cout << "\n\nIncorrect number of args.  Should be \n(1)input file\n(2)X output file" << std::endl;
+        std::cout << "\n\nIncorrect number of args.  Should be \n(1)input file\n(2)X output file\n(3)Y output file" << std::endl;
         #endif
         return 0;
     }
@@ -82,8 +79,12 @@ int main(int argc, char **argv){
     if(!inputfile){
         return 0;
     }
-    char *outputfile = argv[2];
-    if(!outputfile){
+    char *xoutputfile = argv[2];
+    if(!xoutputfile){
+        return 0;
+    }
+    char *youtputfile = argv[3];
+    if(!youtputfile){
         return 0;
     }
     #if TEST_MODE
@@ -132,9 +133,6 @@ int main(int argc, char **argv){
     std::cout << "Loaded " << inputfile << ", " << width << " x "<< height << " pixels with size " << (uint)size << std::endl;
     #endif
 
-    // Allocate device memory for result
-    float *outData = NULL;
-    checkCudaErrors(cudaMalloc((void **) &outData, size));
 
     // Allocate array and copy image data
     cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
@@ -186,12 +184,15 @@ int main(int argc, char **argv){
     /***************
     CALL KERNEL TO PROCESS FILE
     ****************/
+    // Allocate device memory for result
+    float *outData = NULL;
+    checkCudaErrors(cudaMalloc((void **) &outData, size));
     sobelKernel<<<dimGrid, dimBlock>>>(outData, width, height, X_SOBEL);
     getLastCudaError("Kernel execution failed");
 
 
     /***************
-    SAVE OUTPUT TO FILE
+    SAVE X OUTPUT TO FILE
     ****************/
     // Allocate mem for the result on host side
     float *hOutputData = (float *) malloc(size);
@@ -211,19 +212,61 @@ int main(int argc, char **argv){
 
 
     // Write to file
-    char *outimagePath = sdkFindFilePath(outputfile, argv[0]);
+    char *outimagePath = sdkFindFilePath(xoutputfile, argv[0]);
     if (outimagePath == NULL){
         #if DEBUG_MESSAGES_ON
-        std::cout << "Unable to source image file:"<< outputfile << "\n" << std::endl;
+        std::cout << "Unable to source image file:"<< xoutputfile << "\n" << std::endl;
         #endif
         exit(EXIT_FAILURE);
     }
     sdkSavePGM(outimagePath, hOutputData, width, height);
     #if DEBUG_MESSAGES_ON
-    std::cout << "Wrote to " << outputfile << "." << std::endl;
+    std::cout << "Wrote to " << xoutputfile << "." << std::endl;
     #endif
 
 
+    /****************
+    Do Y sobel filter now
+    *****************/
+    // Allocate device memory for result
+    float *yOutData = NULL;
+    checkCudaErrors(cudaMalloc((void **) &yOutData, size));
+    sobelKernel<<<dimGrid, dimBlock>>>(yOutData, width, height, Y_SOBEL);
+    getLastCudaError("Kernel execution failed");
+
+
+    /***************
+    SAVE Y OUTPUT TO FILE
+    ****************/
+    // Allocate mem for the result on host side
+    float *hyOutputData = (float *) malloc(size);
+    // copy result from device to host
+    checkCudaErrors(cudaMemcpy(hyOutputData,
+                               (const void*)yOutData,
+                               size,
+                               cudaMemcpyDeviceToHost));
+    end = std::chrono::system_clock::now();
+    // Write to stats file
+    #if TEST_MODE
+    if(statsFile){
+        std::chrono::duration<double> timeElapsed = end-start;
+        fprintf(statsFile, "ComputeTimeStats: %f\n", timeElapsed);
+    }
+    #endif
+
+
+    // Write to file
+    char *youtimagePath = sdkFindFilePath(youtputfile, argv[0]);
+    if (youtimagePath == NULL){
+        #if DEBUG_MESSAGES_ON
+        std::cout << "Unable to source image file:"<< xoutputfile << "\n" << std::endl;
+        #endif
+        exit(EXIT_FAILURE);
+    }
+    sdkSavePGM(youtimagePath, hyOutputData, width, height);
+    #if DEBUG_MESSAGES_ON
+    std::cout << "Wrote to " << youtputfile << "." << std::endl;
+    #endif
 
     /*************
     CREATE STANDARD FILE TO TEST CUDA SOLUTION ON HOST
