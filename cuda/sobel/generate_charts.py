@@ -87,7 +87,7 @@ def processCCCStats():
     plt.xlabel("Block Size (px)")
     plt.ylabel("Compute time for X(red) & Y(green)")
     plt.show()
-    fig.savefig("ccc_stats_xy.pdf")
+    fig.savefig("data/ccc_stats_xy.pdf")
 
 
     gsTimes = []
@@ -109,7 +109,7 @@ def processCCCStats():
     plt.xlabel("Block Size (px)")
     plt.ylabel("Compute time for X(blue), Y(green), CPU(red)")
     plt.show()
-    fig.savefig("ccc_stats_xy_cpu.pdf")
+    fig.savefig("data/ccc_stats_xy_cpu.pdf")
 
 def getAverageLoadTime():
     loadTimes = []
