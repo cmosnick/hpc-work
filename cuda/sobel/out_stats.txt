@@ -1,0 +1,595 @@
+LoadTimeStats: 0.003207
+ComputeTimeStats: x 4x4  0.002902
+ComputeTimeStats: y 4x4  0.014538
+GSTimingStats: 0.012594
+GSTimingStats: 0.012358
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003215
+ComputeTimeStats: x 4x8  0.002648
+ComputeTimeStats: y 4x8  0.013801
+GSTimingStats: 0.012522
+GSTimingStats: 0.012326
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003351
+ComputeTimeStats: x 8x8  0.002495
+ComputeTimeStats: y 8x8  0.013540
+GSTimingStats: 0.012579
+GSTimingStats: 0.012371
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003195
+ComputeTimeStats: x 8x16  0.002531
+ComputeTimeStats: y 8x16  0.013811
+GSTimingStats: 0.012456
+GSTimingStats: 0.012394
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003320
+ComputeTimeStats: x 16x16  0.002452
+ComputeTimeStats: y 16x16  0.013349
+GSTimingStats: 0.012562
+GSTimingStats: 0.012357
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003216
+ComputeTimeStats: x 4x4  0.003006
+ComputeTimeStats: y 4x4  0.014787
+GSTimingStats: 0.012560
+GSTimingStats: 0.012345
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003246
+ComputeTimeStats: x 4x8  0.002871
+ComputeTimeStats: y 4x8  0.014004
+GSTimingStats: 0.012504
+GSTimingStats: 0.012383
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003229
+ComputeTimeStats: x 8x8  0.002839
+ComputeTimeStats: y 8x8  0.014063
+GSTimingStats: 0.012525
+GSTimingStats: 0.012377
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003281
+ComputeTimeStats: x 8x16  0.002691
+ComputeTimeStats: y 8x16  0.013635
+GSTimingStats: 0.012509
+GSTimingStats: 0.012359
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003279
+ComputeTimeStats: x 16x16  0.002561
+ComputeTimeStats: y 16x16  0.013534
+GSTimingStats: 0.012471
+GSTimingStats: 0.012382
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002933
+ComputeTimeStats: x 16  0.002862
+ComputeTimeStats: y 16  0.014586
+GSTimingStats: 0.012540
+GSTimingStats: 0.012361
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002967
+ComputeTimeStats: x 32  0.002525
+ComputeTimeStats: y 32  0.013928
+GSTimingStats: 0.012450
+GSTimingStats: 0.012368
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003073
+ComputeTimeStats: x 64  0.002394
+ComputeTimeStats: y 64  0.013591
+GSTimingStats: 0.012337
+GSTimingStats: 0.012365
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003072
+ComputeTimeStats: x 128  0.002476
+ComputeTimeStats: y 128  0.013925
+GSTimingStats: 0.012487
+GSTimingStats: 0.012417
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002968
+ComputeTimeStats: x 256  0.002124
+ComputeTimeStats: y 256  0.013219
+GSTimingStats: 0.012488
+GSTimingStats: 0.012255
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003048
+ComputeTimeStats: x 16  0.003008
+ComputeTimeStats: y 16  0.014740
+GSTimingStats: 0.012406
+GSTimingStats: 0.012368
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002984
+ComputeTimeStats: x 32  0.002371
+ComputeTimeStats: y 32  0.013798
+GSTimingStats: 0.012471
+GSTimingStats: 0.012288
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003003
+ComputeTimeStats: x 64  0.002173
+ComputeTimeStats: y 64  0.013334
+GSTimingStats: 0.012582
+GSTimingStats: 0.012255
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002999
+ComputeTimeStats: x 128  0.002200
+ComputeTimeStats: y 128  0.013392
+GSTimingStats: 0.012574
+GSTimingStats: 0.012253
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002980
+ComputeTimeStats: x 256  0.002445
+ComputeTimeStats: y 256  0.013625
+GSTimingStats: 0.012530
+GSTimingStats: 0.012361
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003116
+ComputeTimeStats: x 16  0.002912
+ComputeTimeStats: y 16  0.014623
+GSTimingStats: 0.012393
+GSTimingStats: 0.012348
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003018
+ComputeTimeStats: x 32  0.002642
+ComputeTimeStats: y 32  0.013779
+GSTimingStats: 0.012344
+GSTimingStats: 0.012355
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003035
+ComputeTimeStats: x 64  0.002386
+ComputeTimeStats: y 64  0.013712
+GSTimingStats: 0.012470
+GSTimingStats: 0.012341
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.002942
+ComputeTimeStats: x 128  0.002322
+ComputeTimeStats: y 128  0.013446
+GSTimingStats: 0.012564
+GSTimingStats: 0.012263
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003030
+ComputeTimeStats: x 256  0.002278
+ComputeTimeStats: y 256  0.013371
+GSTimingStats: 0.012543
+GSTimingStats: 0.012311
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003204
+ComputeTimeStats: x 16  0.002861
+ComputeTimeStats: y 16  0.014552
+GSTimingStats: 0.012577
+GSTimingStats: 0.012307
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003008
+ComputeTimeStats: x 32  0.002785
+ComputeTimeStats: y 32  0.014036
+GSTimingStats: 0.012603
+GSTimingStats: 0.012378
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003067
+ComputeTimeStats: x 64  0.002613
+ComputeTimeStats: y 64  0.013439
+GSTimingStats: 0.012518
+GSTimingStats: 0.012353
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003146
+ComputeTimeStats: x 128  0.002420
+ComputeTimeStats: y 128  0.013911
+GSTimingStats: 0.012430
+GSTimingStats: 0.012404
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003031
+ComputeTimeStats: x 256  0.002096
+ComputeTimeStats: y 256  0.013176
+GSTimingStats: 0.012378
+GSTimingStats: 0.012583
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003117
+ComputeTimeStats: x 16  0.002672
+ComputeTimeStats: y 16  0.015127
+GSTimingStats: 0.012449
+GSTimingStats: 0.012233
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003047
+ComputeTimeStats: x 32  0.002533
+ComputeTimeStats: y 32  0.013943
+GSTimingStats: 0.012603
+GSTimingStats: 0.012342
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003052
+ComputeTimeStats: x 64  0.002331
+ComputeTimeStats: y 64  0.013470
+GSTimingStats: 0.012613
+GSTimingStats: 0.012415
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003112
+ComputeTimeStats: x 128  0.002099
+ComputeTimeStats: y 128  0.013101
+GSTimingStats: 0.012496
+GSTimingStats: 0.012295
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003107
+ComputeTimeStats: x 256  0.002518
+ComputeTimeStats: y 256  0.013446
+GSTimingStats: 0.012477
+GSTimingStats: 0.012353
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003171
+ComputeTimeStats: x 16  0.002503
+ComputeTimeStats: y 16  0.014463
+GSTimingStats: 0.012570
+GSTimingStats: 0.012262
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003152
+ComputeTimeStats: x 32  0.002197
+ComputeTimeStats: y 32  0.013787
+GSTimingStats: 0.012522
+GSTimingStats: 0.012320
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003220
+ComputeTimeStats: x 64  0.002301
+ComputeTimeStats: y 64  0.013739
+GSTimingStats: 0.012575
+GSTimingStats: 0.012443
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003099
+ComputeTimeStats: x 128  0.002319
+ComputeTimeStats: y 128  0.013347
+GSTimingStats: 0.012672
+GSTimingStats: 0.012360
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003211
+ComputeTimeStats: x 256  0.002119
+ComputeTimeStats: y 256  0.013244
+GSTimingStats: 0.012509
+GSTimingStats: 0.012370
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003200
+ComputeTimeStats: x 16  0.002659
+ComputeTimeStats: y 16  0.014116
+GSTimingStats: 0.012444
+GSTimingStats: 0.012362
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003251
+ComputeTimeStats: x 32  0.002508
+ComputeTimeStats: y 32  0.013841
+GSTimingStats: 0.012398
+GSTimingStats: 0.012359
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003177
+ComputeTimeStats: x 64  0.002384
+ComputeTimeStats: y 64  0.013601
+GSTimingStats: 0.012406
+GSTimingStats: 0.012376
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003179
+ComputeTimeStats: x 128  0.002024
+ComputeTimeStats: y 128  0.013129
+GSTimingStats: 0.012408
+GSTimingStats: 0.012367
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003241
+ComputeTimeStats: x 256  0.002272
+ComputeTimeStats: y 256  0.013600
+GSTimingStats: 0.012378
+GSTimingStats: 0.012350
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003244
+ComputeTimeStats: x 16  0.002741
+ComputeTimeStats: y 16  0.014655
+GSTimingStats: 0.012564
+GSTimingStats: 0.012343
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003282
+ComputeTimeStats: x 32  0.002675
+ComputeTimeStats: y 32  0.013908
+GSTimingStats: 0.012580
+GSTimingStats: 0.012365
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003281
+ComputeTimeStats: x 64  0.002462
+ComputeTimeStats: y 64  0.013409
+GSTimingStats: 0.012567
+GSTimingStats: 0.012398
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003275
+ComputeTimeStats: x 128  0.002360
+ComputeTimeStats: y 128  0.013215
+GSTimingStats: 0.012567
+GSTimingStats: 0.012348
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003261
+ComputeTimeStats: x 256  0.002228
+ComputeTimeStats: y 256  0.013020
+GSTimingStats: 0.012484
+GSTimingStats: 0.012377
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003227
+ComputeTimeStats: x 16  0.003052
+ComputeTimeStats: y 16  0.014931
+GSTimingStats: 0.012495
+GSTimingStats: 0.012375
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003094
+ComputeTimeStats: x 32  0.002472
+ComputeTimeStats: y 32  0.013889
+GSTimingStats: 0.012542
+GSTimingStats: 0.012374
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003150
+ComputeTimeStats: x 64  0.002070
+ComputeTimeStats: y 64  0.013450
+GSTimingStats: 0.012500
+GSTimingStats: 0.012325
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003162
+ComputeTimeStats: x 128  0.002224
+ComputeTimeStats: y 128  0.013358
+GSTimingStats: 0.012445
+GSTimingStats: 0.012313
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003121
+ComputeTimeStats: x 256  0.001995
+ComputeTimeStats: y 256  0.013308
+GSTimingStats: 0.012492
+GSTimingStats: 0.012350
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003282
+ComputeTimeStats: x 16  0.002993
+ComputeTimeStats: y 16  0.014528
+GSTimingStats: 0.012547
+GSTimingStats: 0.012348
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003348
+ComputeTimeStats: x 32  0.002483
+ComputeTimeStats: y 32  0.013745
+GSTimingStats: 0.012511
+GSTimingStats: 0.012356
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003228
+ComputeTimeStats: x 64  0.002357
+ComputeTimeStats: y 64  0.013239
+GSTimingStats: 0.012517
+GSTimingStats: 0.012395
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003268
+ComputeTimeStats: x 128  0.002363
+ComputeTimeStats: y 128  0.013592
+GSTimingStats: 0.012389
+GSTimingStats: 0.012367
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003299
+ComputeTimeStats: x 256  0.002343
+ComputeTimeStats: y 256  0.013869
+GSTimingStats: 0.012451
+GSTimingStats: 0.012359
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003279
+ComputeTimeStats: x 16  0.002853
+ComputeTimeStats: y 16  0.014730
+GSTimingStats: 0.012592
+GSTimingStats: 0.012379
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003280
+ComputeTimeStats: x 32  0.002632
+ComputeTimeStats: y 32  0.013939
+GSTimingStats: 0.012597
+GSTimingStats: 0.012424
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003278
+ComputeTimeStats: x 64  0.002444
+ComputeTimeStats: y 64  0.013470
+GSTimingStats: 0.012542
+GSTimingStats: 0.012377
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003274
+ComputeTimeStats: x 128  0.002453
+ComputeTimeStats: y 128  0.013378
+GSTimingStats: 0.012593
+GSTimingStats: 0.012409
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003258
+ComputeTimeStats: x 256  0.002080
+ComputeTimeStats: y 256  0.012958
+GSTimingStats: 0.012611
+GSTimingStats: 0.012461
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003244
+ComputeTimeStats: x 16  0.002791
+ComputeTimeStats: y 16  0.014729
+GSTimingStats: 0.012493
+GSTimingStats: 0.012347
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003149
+ComputeTimeStats: x 32  0.002193
+ComputeTimeStats: y 32  0.013791
+GSTimingStats: 0.012593
+GSTimingStats: 0.012269
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003137
+ComputeTimeStats: x 64  0.002060
+ComputeTimeStats: y 64  0.013284
+GSTimingStats: 0.012649
+GSTimingStats: 0.012274
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003209
+ComputeTimeStats: x 128  0.002181
+ComputeTimeStats: y 128  0.013470
+GSTimingStats: 0.012587
+GSTimingStats: 0.012308
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003256
+ComputeTimeStats: x 256  0.002412
+ComputeTimeStats: y 256  0.013383
+GSTimingStats: 0.012564
+GSTimingStats: 0.012371
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003241
+ComputeTimeStats: x 16  0.002840
+ComputeTimeStats: y 16  0.014852
+GSTimingStats: 0.012387
+GSTimingStats: 0.012385
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003150
+ComputeTimeStats: x 32  0.002454
+ComputeTimeStats: y 32  0.013755
+GSTimingStats: 0.012470
+GSTimingStats: 0.012310
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003161
+ComputeTimeStats: x 64  0.002319
+ComputeTimeStats: y 64  0.013722
+GSTimingStats: 0.012454
+GSTimingStats: 0.012326
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003144
+ComputeTimeStats: x 128  0.002097
+ComputeTimeStats: y 128  0.013641
+GSTimingStats: 0.012569
+GSTimingStats: 0.012329
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003165
+ComputeTimeStats: x 256  0.002240
+ComputeTimeStats: y 256  0.013283
+GSTimingStats: 0.012533
+GSTimingStats: 0.012295
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003249
+ComputeTimeStats: x 16  0.002736
+ComputeTimeStats: y 16  0.014318
+GSTimingStats: 0.012515
+GSTimingStats: 0.012370
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003263
+ComputeTimeStats: x 32  0.002362
+ComputeTimeStats: y 32  0.013587
+GSTimingStats: 0.012417
+GSTimingStats: 0.012372
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003225
+ComputeTimeStats: x 64  0.002288
+ComputeTimeStats: y 64  0.013621
+GSTimingStats: 0.012479
+GSTimingStats: 0.012401
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003229
+ComputeTimeStats: x 128  0.002233
+ComputeTimeStats: y 128  0.013620
+GSTimingStats: 0.012467
+GSTimingStats: 0.012331
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003251
+ComputeTimeStats: x 256  0.002281
+ComputeTimeStats: y 256  0.013549
+GSTimingStats: 0.012396
+GSTimingStats: 0.012351
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003341
+ComputeTimeStats: x 16  0.002870
+ComputeTimeStats: y 16  0.014486
+GSTimingStats: 0.012532
+GSTimingStats: 0.012401
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003236
+ComputeTimeStats: x 32  0.002658
+ComputeTimeStats: y 32  0.013731
+GSTimingStats: 0.012526
+GSTimingStats: 0.012402
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003242
+ComputeTimeStats: x 64  0.002358
+ComputeTimeStats: y 64  0.013247
+GSTimingStats: 0.012528
+GSTimingStats: 0.012344
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003237
+ComputeTimeStats: x 128  0.002192
+ComputeTimeStats: y 128  0.013537
+GSTimingStats: 0.012440
+GSTimingStats: 0.012361
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
+LoadTimeStats: 0.003296
+ComputeTimeStats: x 256  0.002251
+ComputeTimeStats: y 256  0.013414
+GSTimingStats: 0.012456
+GSTimingStats: 0.012357
+AccuracyStats: 2.476883
+AccuracyStats: 3.544235
